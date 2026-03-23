@@ -1,24 +1,30 @@
-import logo from './logo.svg';
 import './App.css';
+import BookAppointment from './Components/BookAppointment.jsx';
+import Careers from './Components/Careers.jsx';
+import Footer from './Components/Footer.jsx';
+import ResponsiveLayout from './Components/ResponsiveLayout.jsx';
+import SkinAssessment from './Components/SkinAssessment.jsx';
+import LookGallery from './Components/LookGallery.jsx';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+
+      <ResponsiveLayout />
+
+      <Routes>
+        <Route path="/" element={<LookGallery />} />
+
+        <Route path="/careers" element={<Careers />} />
+        <Route path="/SkinAssessment" element={<SkinAssessment />} />
+
+        <Route path="/book-appointment" element={<BookAppointment />} />
+      </Routes>
+
+      <Footer />
+
+    </Router>
   );
 }
 
