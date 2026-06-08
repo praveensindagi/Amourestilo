@@ -1,11 +1,11 @@
 import './App.css';
-import BookAppointment from './Components/BookAppointment.jsx';
-import Careers from './Components/Careers.jsx';
-import Footer from './Components/Footer.jsx';
 import ResponsiveLayout from './Components/ResponsiveLayout.jsx';
-import SkinAssessment from './Components/SkinAssessment.jsx';
-import LookGallery from './Components/LookGallery.jsx';
+import AmourEstiloAbout from './Components/AmourEstiloAbout.jsx';
+import AmourAppointmentBooking from './Components/Amourappointmentbooking';
+import Amourestilohomepage from './Components/Amourestilohomepage';
+import Amourestilocareers from './Components/Amourestilocareers';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import HouseOfAmourEstilo from './Components/HouseOfAmourEstilo';
 
 function App() {
   return (
@@ -14,16 +14,14 @@ function App() {
       <ResponsiveLayout />
 
       <Routes>
-        <Route path="/" element={<LookGallery />} />
+        <Route path="/" element={<Amourestilohomepage />} />
+        <Route path="/AmourEstiloAbout" element={<AmourEstiloAbout />} />
+        <Route path="/HouseOfAmourEstilo" element={< HouseOfAmourEstilo/>} />
+        <Route path="/AmourAppointmentBooking" element={<AmourAppointmentBooking />} />
+        <Route path="/Amourestilocareers" element={<Amourestilocareers />} />
 
-        <Route path="/careers" element={<Careers />} />
-        <Route path="/SkinAssessment" element={<SkinAssessment />} />
 
-        <Route path="/book-appointment" element={<BookAppointment />} />
       </Routes>
-
-      <Footer />
-
     </Router>
   );
 }

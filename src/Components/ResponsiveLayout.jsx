@@ -27,11 +27,10 @@ const theme = createTheme({
 
 const mainMenu = [
   { name: "Home", path: "/" },
-  { name: "Book Appointment", path: "/book-appointment" },
-  { name: "Careers", path: "/careers" },
-  { name: "Amour Looks", path: "/looks" },
-  { name: "Maison AE", path: "/maison" },
-  { name: "Skin Assessment", path: "/SkinAssessment" }
+  { name: "Book Appointment", path: "/Amourappointmentbooking" },
+  { name: "MAISON AMOUR ESTILO", path: "/AmourEstiloAbout" },
+  { name: "Skin Assessment", path: "/HouseOfAmourEstilo" },
+  { name: "Careers", path: "/Amourestilocareers" }
 ];
 const subMenu = ["Customer Care", "Store Locator", "Sustainability"];
 
