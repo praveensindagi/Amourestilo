@@ -1,19 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
-import bridalImage from './Media/Bride.png';
+import BrandsSection from "./BrandsSection";
+import ServicesSection from "./AmourEstiloServices";
 import {
   Box,
   Container,
   Typography,
   Grid,
   Stack,
-  Divider,
   IconButton,
   Drawer,
 } from "@mui/material";
 import { createTheme, ThemeProvider, styled } from "@mui/material/styles";
-
-// ─── FONTS: Add to index.html <head> ──────────────────────────────────────────
-// <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@200;300;400&display=swap" rel="stylesheet">
 
 // ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
 const C = {
@@ -80,43 +77,37 @@ const Body = styled(Typography)({
 });
 
 const BtnPrimary = styled("a")({
-  display:       "inline-block",
-  fontFamily:    C.sans,
-  fontWeight:    300,
-  fontSize:      "0.58rem",
-  letterSpacing: "0.38em",
-  textTransform: "uppercase",
-  padding:       "14px 40px",
-  background:    C.black,
-  color:         C.white,
-  textDecoration:"none",
-  border:        `0.5px solid ${C.black}`,
-  cursor:        "pointer",
-  transition:    "background 0.3s, color 0.3s",
-  "&:hover":     { background: C.g1, color: C.white },
+  display:        "inline-block",
+  fontFamily:     C.sans,
+  fontWeight:     300,
+  fontSize:       "0.58rem",
+  letterSpacing:  "0.38em",
+  textTransform:  "uppercase",
+  padding:        "14px 40px",
+  background:     C.black,
+  color:          C.white,
+  textDecoration: "none",
+  border:         `0.5px solid ${C.black}`,
+  cursor:         "pointer",
+  transition:     "background 0.3s, color 0.3s",
+  "&:hover":      { background: C.g1, color: C.white },
 });
 
 const BtnGhost = styled("a")({
-  display:       "inline-block",
-  fontFamily:    C.sans,
-  fontWeight:    300,
-  fontSize:      "0.58rem",
-  letterSpacing: "0.38em",
-  textTransform: "uppercase",
-  padding:       "14px 40px",
-  background:    "transparent",
-  color:         C.black,
-  textDecoration:"none",
-  border:        `0.5px solid ${C.black}`,
-  cursor:        "pointer",
-  transition:    "background 0.3s, color 0.3s",
-  "&:hover":     { background: C.black, color: C.white },
-});
-
-const ThinLine = styled(Box)({
-  width:      "100%",
-  height:     "0.5px",
-  background: C.border,
+  display:        "inline-block",
+  fontFamily:     C.sans,
+  fontWeight:     300,
+  fontSize:       "0.58rem",
+  letterSpacing:  "0.38em",
+  textTransform:  "uppercase",
+  padding:        "14px 40px",
+  background:     "transparent",
+  color:          C.black,
+  textDecoration: "none",
+  border:         `0.5px solid ${C.black}`,
+  cursor:         "pointer",
+  transition:     "background 0.3s, color 0.3s",
+  "&:hover":      { background: C.black, color: C.white },
 });
 
 // ─── FADE IN HOOK ─────────────────────────────────────────────────────────────
@@ -151,8 +142,12 @@ const FadeUp = ({ children, delay = 0 }) => {
 const SectionHeader = ({ eyebrow, title, center = false, light = false }) => (
   <FadeUp>
     <Box sx={{ textAlign: center ? "center" : "left", mb: { xs: 6, md: 9 } }}>
-      <Label sx={{ color: light ? C.g4 : C.g4, mb: 2, justifyContent: center ? "center" : "flex-start", display: "flex", alignItems: "center", gap: "14px",
-        "&::before": { content: '""', display: center ? "none" : "block", width: 24, height: "0.5px", background: C.g5, flexShrink: 0 } }}>
+      <Label sx={{
+        color: C.g4, mb: 2,
+        justifyContent: center ? "center" : "flex-start",
+        display: "flex", alignItems: "center", gap: "14px",
+        "&::before": { content: '""', display: center ? "none" : "block", width: 24, height: "0.5px", background: C.g5, flexShrink: 0 },
+      }}>
         {eyebrow}
       </Label>
       <Display variant="h2" sx={{ fontSize: { xs: "2.4rem", md: "3.8rem" }, color: light ? C.white : C.black }}>
@@ -190,13 +185,10 @@ const HeroSection = () => {
       overflow:       "hidden",
       pt:             "80px",
     }}>
-      {/* Subtle grid texture */}
       <Box sx={{
         position: "absolute", inset: 0, pointerEvents: "none",
         background: "repeating-linear-gradient(90deg,rgba(255,255,255,0.013) 0,rgba(255,255,255,0.013) 1px,transparent 1px,transparent 64px), repeating-linear-gradient(0deg,rgba(255,255,255,0.013) 0,rgba(255,255,255,0.013) 1px,transparent 1px,transparent 64px)",
       }} />
-
-      {/* Watermark */}
       <Box sx={{
         position: "absolute", top: "50%", left: "50%",
         transform: "translate(-50%,-50%)",
@@ -208,9 +200,7 @@ const HeroSection = () => {
       }}>
         AMOUR ESTILO
       </Box>
-
       <Container maxWidth="lg" sx={{ position: "relative", textAlign: "center", px: { xs: 3, md: 8 } }}>
-        {/* Eyebrow */}
         <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 2.5, mb: 5 }}>
           <Box sx={{ width: 40, height: "0.5px", bgcolor: C.g3 }} />
           <Label sx={{ color: C.g3, fontSize: "0.55rem", letterSpacing: "0.5em" }}>
@@ -218,37 +208,22 @@ const HeroSection = () => {
           </Label>
           <Box sx={{ width: 40, height: "0.5px", bgcolor: C.g3 }} />
         </Box>
-
-        {/* Headline */}
-        <Display variant="h1" sx={{
-          fontSize:  { xs: "3.2rem", sm: "5rem", md: "7rem", lg: "9rem" },
-          color:     C.white,
-          mb:        1,
-          lineHeight: 1,
-        }}>
+        <Display variant="h1" sx={{ fontSize: { xs: "3.2rem", sm: "5rem", md: "7rem", lg: "9rem" }, color: C.white, mb: 1, lineHeight: 1 }}>
           L'Art du
         </Display>
         <Box sx={{
-          fontFamily:  C.serif,
-          fontWeight:  300,
-          fontStyle:   "italic",
-          fontSize:    { xs: "3.2rem", sm: "5rem", md: "7rem", lg: "9rem" },
-          color:       C.white,
-          lineHeight:  1,
-          mb:          5,
-          opacity:     fade ? 1 : 0,
-          transform:   fade ? "translateY(0)" : "translateY(12px)",
-          transition:  "opacity 0.5s ease, transform 0.5s ease",
+          fontFamily: C.serif, fontWeight: 300, fontStyle: "italic",
+          fontSize: { xs: "3.2rem", sm: "5rem", md: "7rem", lg: "9rem" },
+          color: C.white, lineHeight: 1, mb: 5,
+          opacity: fade ? 1 : 0,
+          transform: fade ? "translateY(0)" : "translateY(12px)",
+          transition: "opacity 0.5s ease, transform 0.5s ease",
         }}>
           {words[idx]}
         </Box>
-
-        {/* Subline */}
         <Body sx={{ color: "rgba(255,255,255,0.38)", mb: 7, fontSize: "0.72rem", letterSpacing: "0.06em" }}>
           India's Premier Luxury Makeup Atelier — High Fashion. Haute Standard.
         </Body>
-
-        {/* CTAs */}
         <Stack direction={{ xs: "column", sm: "row" }} spacing={2} justifyContent="center">
           <BtnPrimary href="#booking" sx={{ background: C.white, color: C.black, borderColor: C.white, "&:hover": { background: C.g6, color: C.black } }}>
             Book Your Session
@@ -257,8 +232,6 @@ const HeroSection = () => {
             Explore Services
           </BtnGhost>
         </Stack>
-
-        {/* Scroll indicator */}
         <Box sx={{ mt: 10, display: "flex", flexDirection: "column", alignItems: "center", gap: 1 }}>
           <Label sx={{ color: "rgba(255,255,255,0.2)", fontSize: "0.5rem", letterSpacing: "0.45em" }}>Scroll</Label>
           <Box sx={{
@@ -276,124 +249,6 @@ const HeroSection = () => {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SECTION 2 — BRAND STATEMENT STRIP
-// ═══════════════════════════════════════════════════════════════════════════════
-const StatementStrip = () => (
-  <Box sx={{ bgcolor: C.white, py: { xs: 7, md: 10 }, borderBottom: `0.5px solid ${C.border}` }}>
-    <Container maxWidth="lg">
-      <FadeUp>
-        <Stack direction="row" alignItems="center" justifyContent="center" spacing={4}>
-          <Box sx={{ flex: 1, height: "0.5px", bgcolor: C.g5 }} />
-          <Display sx={{
-            fontSize:      { xs: "1.1rem", md: "1.6rem" },
-            fontStyle:     "italic",
-            textAlign:     "center",
-            color:         C.g1,
-            letterSpacing: "0.02em",
-            px:            2,
-          }}>
-            "Where Indian Beauty Meets French Elegance"
-          </Display>
-          <Box sx={{ flex: 1, height: "0.5px", bgcolor: C.g5 }} />
-        </Stack>
-      </FadeUp>
-    </Container>
-  </Box>
-);
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// SECTION 3 — SERVICES GRID
-// ═══════════════════════════════════════════════════════════════════════════════
-const SERVICES = [
-  { name: "Bridal & Shaadi",     sub: "Weddings across India & abroad",   num: "01" },
-  { name: "Film & OTT",          sub: "Cinema, web series & television",   num: "02" },
-  { name: "Fashion & Editorial", sub: "Photoshoots & magazine looks",      num: "03" },
-  { name: "Ad Films & Campaigns",sub: "Commercial & brand productions",    num: "04" },
-  { name: "Corporate & Events",  sub: "Conferences, galas & mehfils",      num: "05" },
-  { name: "On-Demand Worldwide", sub: "Pan India · Fly anywhere globally", num: "06" },
-];
-
-const ServiceCard = ({ item, idx }) => {
-  const [hov, setHov] = useState(false);
-  return (
-    <Box
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
-      sx={{
-        position:   "relative",
-        bgcolor:    hov ? C.black : C.g7,
-        border:     `0.5px solid ${C.border}`,
-        p:          { xs: 4, md: 5 },
-        cursor:     "pointer",
-        transition: "background 0.4s",
-        minHeight:  220,
-        display:    "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-      }}
-    >
-      <Typography sx={{
-        fontFamily:    C.sans,
-        fontWeight:    200,
-        fontSize:      "0.58rem",
-        letterSpacing: "0.38em",
-        textTransform: "uppercase",
-        color:         hov ? C.g4 : C.g4,
-        transition:    "color 0.4s",
-      }}>
-        {item.num}
-      </Typography>
-
-      <Box>
-        <Display sx={{
-          fontSize:   { xs: "1.4rem", md: "1.7rem" },
-          color:      hov ? C.white : C.black,
-          mb:         1,
-          transition: "color 0.4s",
-        }}>
-          {item.name}
-        </Display>
-        <Body sx={{
-          fontSize:   "0.7rem",
-          color:      hov ? C.g4 : C.g3,
-          transition: "color 0.4s",
-        }}>
-          {item.sub}
-        </Body>
-      </Box>
-
-      <Box sx={{
-        display:    "flex",
-        justifyContent: "flex-end",
-        opacity:    hov ? 1 : 0,
-        transform:  hov ? "translate(0,0)" : "translate(-8px,8px)",
-        transition: "opacity 0.35s, transform 0.35s",
-      }}>
-        <Typography sx={{ color: C.white, fontSize: "1.2rem" }}>↗</Typography>
-      </Box>
-    </Box>
-  );
-};
-
-const ServicesSection = () => (
-  <Box id="services" sx={{ bgcolor: C.white, py: { xs: 10, md: 16 } }}>
-    <Container maxWidth="lg">
-      <SectionHeader eyebrow="L'Atelier" title={<>Our <em>Services</em></>} />
-      <FadeUp delay={100}>
-        <Grid container spacing={0} sx={{ border: `0.5px solid ${C.border}` }}>
-          {SERVICES.map((s, i) => (
-            <Grid item xs={12} sm={6} md={4} key={i}
-              sx={{ borderRight: { md: i % 3 !== 2 ? `0.5px solid ${C.border}` : "none" }, borderBottom: i < 3 ? `0.5px solid ${C.border}` : "none" }}>
-              <ServiceCard item={s} idx={i} />
-            </Grid>
-          ))}
-        </Grid>
-      </FadeUp>
-    </Container>
-  </Box>
-);
-
-// ═══════════════════════════════════════════════════════════════════════════════
 // SECTION 4 — BOOKING BANNER 1
 // ═══════════════════════════════════════════════════════════════════════════════
 const BookingBanner1 = () => (
@@ -407,12 +262,7 @@ const BookingBanner1 = () => (
         <Label sx={{ color: C.g3, mb: 3, justifyContent: "center", display: "flex" }}>
           Prendre Rendez-vous
         </Label>
-        <Display sx={{
-          fontSize:  { xs: "2.4rem", md: "4.2rem" },
-          color:     C.white,
-          mb:        3,
-          lineHeight: 1.1,
-        }}>
+        <Display sx={{ fontSize: { xs: "2.4rem", md: "4.2rem" }, color: C.white, mb: 3, lineHeight: 1.1 }}>
           Your Most Important Day<br />
           Deserves the <em>Finest Touch</em>
         </Display>
@@ -435,15 +285,15 @@ const BookingBanner1 = () => (
 );
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SECTION 5 — PORTFOLIO GRID (Apple-style image wall)
+// SECTION 5 — PORTFOLIO GRID
 // ═══════════════════════════════════════════════════════════════════════════════
 const PORTFOLIO = [
-  { label: "The Bombay Bride",   tag: "Bridal",    w: 2, h: 2, bg:"#2e2e2e" },
-  { label: "L'Éclat",           tag: "Editorial",  w: 1, h: 1, bg: "#2e2e2e" },
-  { label: "Noir Screen",       tag: "Film",       w: 1, h: 1, bg: "#3a3a3a" },
-  { label: "Kampala Campaign",  tag: "Commercial", w: 1, h: 2, bg: "#242424" },
-  { label: "Mehfil Gala",       tag: "Events",     w: 1, h: 1, bg: "#303030" },
-  { label: "The Quiet Bride",   tag: "Bridal",     w: 1, h: 1, bg: "#1e1e1e" },
+  { label: "The Bombay Bride",  tag: "Bridal",    w: 2, h: 2, bg: "#2e2e2e" },
+  { label: "L'Éclat",          tag: "Editorial",  w: 1, h: 1, bg: "#2e2e2e" },
+  { label: "Noir Screen",      tag: "Film",       w: 1, h: 1, bg: "#3a3a3a" },
+  { label: "Kampala Campaign", tag: "Commercial", w: 1, h: 2, bg: "#242424" },
+  { label: "Mehfil Gala",      tag: "Events",     w: 1, h: 1, bg: "#303030" },
+  { label: "The Quiet Bride",  tag: "Bridal",     w: 1, h: 1, bg: "#1e1e1e" },
 ];
 
 const PortfolioItem = ({ item }) => {
@@ -462,31 +312,20 @@ const PortfolioItem = ({ item }) => {
         cursor:     "pointer",
       }}
     >
-      {/* Placeholder visual — replace with <img> or <video> */}
       <Box sx={{
-        position:   "absolute", inset: 0,
+        position: "absolute", inset: 0,
         background: `linear-gradient(135deg, ${item.bg} 0%, rgba(0,0,0,0.6) 100%)`,
-        display:    "flex", alignItems: "center", justifyContent: "center",
+        display: "flex", alignItems: "center", justifyContent: "center",
       }}>
-        <Typography sx={{
-          fontFamily:    C.serif, fontStyle: "italic",
-          fontSize:      "1.2rem", color: "rgba(255,255,255,0.12)",
-          letterSpacing: "0.08em",
-        }}>
+        <Typography sx={{ fontFamily: C.serif, fontStyle: "italic", fontSize: "1.2rem", color: "rgba(255,255,255,0.12)", letterSpacing: "0.08em" }}>
           {item.label}
         </Typography>
       </Box>
-
-      {/* Hover overlay */}
       <Box sx={{
-        position:   "absolute", inset: 0,
+        position: "absolute", inset: 0,
         background: "rgba(0,0,0,0.55)",
-        opacity:    hov ? 1 : 0,
-        transition: "opacity 0.4s",
-        display:    "flex",
-        flexDirection: "column",
-        justifyContent: "flex-end",
-        p:          3,
+        opacity: hov ? 1 : 0, transition: "opacity 0.4s",
+        display: "flex", flexDirection: "column", justifyContent: "flex-end", p: 3,
       }}>
         <Label sx={{ color: C.g4, mb: 0.8, fontSize: "0.5rem" }}>{item.tag}</Label>
         <Display sx={{ fontSize: "1.2rem", color: C.white }}>{item.label}</Display>
@@ -501,10 +340,10 @@ const PortfolioSection = () => (
       <SectionHeader eyebrow="Le Portfolio" title={<>Our <em>Work</em></>} />
       <FadeUp delay={80}>
         <Box sx={{
-          display:             "grid",
+          display: "grid",
           gridTemplateColumns: { xs: "1fr", sm: "repeat(2,1fr)", md: "repeat(3,1fr)" },
-          gridAutoRows:        "230px",
-          gap:                 "2px",
+          gridAutoRows: "230px",
+          gap: "2px",
         }}>
           {PORTFOLIO.map((item, i) => <PortfolioItem key={i} item={item} />)}
         </Box>
@@ -517,17 +356,17 @@ const PortfolioSection = () => (
 );
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SECTION 6 — MAKEUP LOOKS SHOWCASE (horizontal scroll)
+// SECTION 6 — LOOKS SHOWCASE
 // ═══════════════════════════════════════════════════════════════════════════════
 const LOOKS = [
-  { name: "The Bombay Bride",    category: "Bridal",    shade: "#1c1c1c" },
-  { name: "L'Éclat Parisien",   category: "Editorial",  shade: "#282828" },
-  { name: "Noir Screen",        category: "Film",       shade: "#141414" },
-  { name: "Shaadi Glow",        category: "Bridal",    shade: "#202020" },
-  { name: "Campagne Luxe",      category: "Commercial", shade: "#1a1a1a" },
-  { name: "Mehfil Royale",      category: "Events",    shade: "#242424" },
-  { name: "The Quiet Look",     category: "Personal",  shade: "#181818" },
-  { name: "Golden Hour",        category: "Editorial",  shade: "#2a2a2a" },
+  { name: "The Bombay Bride",   category: "Bridal",     shade: "#1c1c1c" },
+  { name: "L'Éclat Parisien",  category: "Editorial",  shade: "#282828" },
+  { name: "Noir Screen",       category: "Film",       shade: "#141414" },
+  { name: "Shaadi Glow",       category: "Bridal",     shade: "#202020" },
+  { name: "Campagne Luxe",     category: "Commercial", shade: "#1a1a1a" },
+  { name: "Mehfil Royale",     category: "Events",     shade: "#242424" },
+  { name: "The Quiet Look",    category: "Personal",   shade: "#181818" },
+  { name: "Golden Hour",       category: "Editorial",  shade: "#2a2a2a" },
 ];
 
 const LooksSection = () => (
@@ -537,44 +376,27 @@ const LooksSection = () => (
     </Container>
     <FadeUp delay={80}>
       <Box sx={{
-        display:        "flex",
-        gap:            "2px",
-        overflowX:      "auto",
-        px:             { xs: 3, md: 8 },
-        pb:             2,
-        scrollbarWidth: "none",
-        "&::-webkit-scrollbar": { display: "none" },
-        cursor: "grab",
-        "&:active": { cursor: "grabbing" },
+        display: "flex", gap: "2px", overflowX: "auto",
+        px: { xs: 3, md: 8 }, pb: 2,
+        scrollbarWidth: "none", "&::-webkit-scrollbar": { display: "none" },
+        cursor: "grab", "&:active": { cursor: "grabbing" },
       }}>
         {LOOKS.map((look, i) => (
           <Box key={i} sx={{
-            flexShrink:    0,
-            width:         { xs: 220, md: 280 },
-            height:        { xs: 320, md: 400 },
-            bgcolor:       look.shade,
-            position:      "relative",
-            overflow:      "hidden",
-            transition:    "transform 0.3s",
-            "&:hover":     { transform: "scale(1.01)" },
+            flexShrink: 0,
+            width: { xs: 220, md: 280 },
+            height: { xs: 320, md: 400 },
+            bgcolor: look.shade,
+            position: "relative", overflow: "hidden",
+            transition: "transform 0.3s", "&:hover": { transform: "scale(1.01)" },
           }}>
-            {/* Image placeholder — replace with <img src={look.img} /> */}
-            <Box sx={{
-              position: "absolute", inset: 0,
-              display:  "flex", alignItems: "center", justifyContent: "center",
-            }}>
-              <Typography sx={{
-                fontFamily: C.serif, fontStyle: "italic",
-                fontSize: "1rem", color: "rgba(255,255,255,0.1)",
-              }}>
+            <Box sx={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Typography sx={{ fontFamily: C.serif, fontStyle: "italic", fontSize: "1rem", color: "rgba(255,255,255,0.1)" }}>
                 {look.name}
               </Typography>
             </Box>
-
-            {/* Bottom label */}
             <Box sx={{
-              position:   "absolute", bottom: 0, left: 0, right: 0,
-              p:          2.5,
+              position: "absolute", bottom: 0, left: 0, right: 0, p: 2.5,
               background: "linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%)",
             }}>
               <Label sx={{ color: C.g4, fontSize: "0.48rem", mb: 0.5 }}>{look.category}</Label>
@@ -605,8 +427,6 @@ const BookingBanner2 = () => (
           <BtnPrimary href="mailto:book@amourestilo.com">Book a Session</BtnPrimary>
           <BtnGhost href="tel:+91XXXXXXXXXX">Call Us</BtnGhost>
         </Stack>
-
-        {/* Location strip */}
         <Stack direction="row" spacing={4} justifyContent="center" sx={{ mt: 7 }}>
           {["Bengaluru", "Pan India", "Worldwide"].map((loc, i) => (
             <Box key={i} sx={{ textAlign: "center" }}>
@@ -624,9 +444,9 @@ const BookingBanner2 = () => (
 // SECTION 8 — ABOUT STRIP
 // ═══════════════════════════════════════════════════════════════════════════════
 const STATS = [
-  { num: "500+",  label: "Looks Created"   },
-  { num: "7",     label: "Service Verticals" },
-  { num: "∞",     label: "Cities Reached"  },
+  { num: "500+", label: "Looks Created"    },
+  { num: "7",    label: "Service Verticals" },
+  { num: "∞",    label: "Cities Reached"   },
 ];
 
 const AboutStrip = () => (
@@ -650,9 +470,9 @@ const AboutStrip = () => (
             <Grid container spacing={0} sx={{ border: `0.5px solid ${C.border}` }}>
               {STATS.map((s, i) => (
                 <Grid item xs={4} key={i} sx={{
-                  p:           3.5,
+                  p: 3.5,
                   borderRight: i < 2 ? `0.5px solid ${C.border}` : "none",
-                  textAlign:   "center",
+                  textAlign: "center",
                 }}>
                   <Display sx={{ fontSize: { xs: "2rem", md: "2.8rem" }, color: C.black, mb: 1 }}>
                     {s.num}
@@ -690,18 +510,11 @@ const InstagramStrip = () => (
           {INSTA.map((bg, i) => (
             <Grid item xs={4} sm={2} key={i}>
               <Box sx={{
-                bgcolor:     bg,
-                aspectRatio: "1",
-                cursor:      "pointer",
-                transition:  "opacity 0.3s",
-                "&:hover":   { opacity: 0.75 },
-                display:     "flex",
-                alignItems:  "center",
-                justifyContent: "center",
+                bgcolor: bg, aspectRatio: "1", cursor: "pointer",
+                transition: "opacity 0.3s", "&:hover": { opacity: 0.75 },
+                display: "flex", alignItems: "center", justifyContent: "center",
               }}>
-                <Typography sx={{ color: "rgba(255,255,255,0.06)", fontFamily: C.serif, fontSize: "0.7rem" }}>
-                  ✦
-                </Typography>
+                <Typography sx={{ color: "rgba(255,255,255,0.06)", fontFamily: C.serif, fontSize: "0.7rem" }}>✦</Typography>
               </Box>
             </Grid>
           ))}
@@ -718,17 +531,16 @@ const InstagramStrip = () => (
 // SECTION 10 — FOOTER
 // ═══════════════════════════════════════════════════════════════════════════════
 const FOOTER_LINKS = {
-  "La Maison":  ["Our Story", "Philosophy", "SOP Standard", "Our Artists", "Our Products"],
-  "Services":   ["Bridal & Shaadi", "Film & OTT", "Fashion & Editorial", "Corporate & Events", "On-Demand"],
-  "Portfolio":  ["Bridal Looks", "Film & Screen", "Editorial", "Events"],
-  "Connect":    ["Book a Session", "WhatsApp", "Instagram", "Careers", "Contact"],
+  "La Maison": ["Our Story", "Philosophy", "SOP Standard", "Our Artists", "Our Products"],
+  "Services":  ["Bridal & Shaadi", "Film & OTT", "Fashion & Editorial", "Corporate & Events", "On-Demand"],
+  "Portfolio": ["Bridal Looks", "Film & Screen", "Editorial", "Events"],
+  "Connect":   ["Book a Session", "WhatsApp", "Instagram", "Careers", "Contact"],
 };
 
 const Footer = () => (
   <Box sx={{ bgcolor: C.black, pt: { xs: 10, md: 14 }, pb: 5, borderTop: `0.5px solid rgba(255,255,255,0.07)` }}>
     <Container maxWidth="lg">
       <Grid container spacing={{ xs: 5, md: 8 }} sx={{ mb: 8 }}>
-        {/* Brand column */}
         <Grid item xs={12} md={4}>
           <Display sx={{ fontSize: "2rem", color: C.white, mb: 2 }}>
             Amour <em>Estilo</em>
@@ -749,22 +561,16 @@ const Footer = () => (
             ))}
           </Stack>
         </Grid>
-
-        {/* Nav columns */}
         {Object.entries(FOOTER_LINKS).map(([col, links]) => (
           <Grid item xs={6} sm={3} md={2} key={col}>
             <Label sx={{ color: C.g3, mb: 3, fontSize: "0.52rem" }}>{col}</Label>
             <Stack spacing={1.5}>
               {links.map((link, i) => (
                 <Typography key={i} component="a" href="#" sx={{
-                  fontFamily:    C.sans,
-                  fontWeight:    300,
-                  fontSize:      "0.68rem",
-                  color:         "rgba(255,255,255,0.28)",
-                  textDecoration:"none",
-                  letterSpacing: "0.04em",
-                  transition:    "color 0.25s",
-                  "&:hover":     { color: C.white },
+                  fontFamily: C.sans, fontWeight: 300, fontSize: "0.68rem",
+                  color: "rgba(255,255,255,0.28)", textDecoration: "none",
+                  letterSpacing: "0.04em", transition: "color 0.25s",
+                  "&:hover": { color: C.white },
                 }}>
                   {link}
                 </Typography>
@@ -773,9 +579,11 @@ const Footer = () => (
           </Grid>
         ))}
       </Grid>
-
-      {/* Bottom bar */}
-      <Box sx={{ borderTop: "0.5px solid rgba(255,255,255,0.07)", pt: 4, display: "flex", flexDirection: { xs: "column", md: "row" }, justifyContent: "space-between", alignItems: "center", gap: 2 }}>
+      <Box sx={{
+        borderTop: "0.5px solid rgba(255,255,255,0.07)", pt: 4,
+        display: "flex", flexDirection: { xs: "column", md: "row" },
+        justifyContent: "space-between", alignItems: "center", gap: 2,
+      }}>
         <Label sx={{ color: "rgba(255,255,255,0.18)", fontSize: "0.5rem" }}>
           © 2025 Amour Estilo. All Rights Reserved. Bengaluru, India.
         </Label>
@@ -800,8 +608,8 @@ const Footer = () => (
 // STICKY NAV
 // ═══════════════════════════════════════════════════════════════════════════════
 const StickyNav = () => {
-  const [scrolled,  setScrolled]  = useState(false);
-  const [heroMode,  setHeroMode]  = useState(true);
+  const [scrolled,   setScrolled]   = useState(false);
+  const [heroMode,   setHeroMode]   = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
@@ -818,80 +626,53 @@ const StickyNav = () => {
   return (
     <>
       <Box component="nav" sx={{
-        position:       "fixed",
-        top:            0, left: 0, right: 0,
-        zIndex:         200,
-        height:         72,
-        display:        "flex",
-        alignItems:     "center",
-        justifyContent: "space-between",
-        px:             { xs: 3, md: 6 },
-        bgcolor:        heroMode
-          ? "rgba(10,10,10,0.0)"
-          : scrolled
-          ? "rgba(255,255,255,0.97)"
-          : "rgba(255,255,255,0.97)",
+        position: "fixed", top: 0, left: 0, right: 0, zIndex: 200,
+        height: 72, display: "flex", alignItems: "center",
+        justifyContent: "space-between", px: { xs: 3, md: 6 },
+        bgcolor: heroMode ? "rgba(10,10,10,0.0)" : "rgba(255,255,255,0.97)",
         backdropFilter: scrolled || !heroMode ? "blur(16px)" : "none",
-        borderBottom:   scrolled || !heroMode ? `0.5px solid ${C.border}` : "none",
-        transition:     "background 0.5s, border-color 0.5s",
+        borderBottom: scrolled || !heroMode ? `0.5px solid ${C.border}` : "none",
+        transition: "background 0.5s, border-color 0.5s",
       }}>
-        {/* Logo */}
         <Typography component="a" href="/" sx={{
-          fontFamily:    C.serif,
-          fontWeight:    300,
-          fontSize:      "1.15rem",
-          letterSpacing: "0.16em",
-          color:         heroMode ? C.white : C.black,
-          textDecoration:"none",
-          transition:    "color 0.4s",
-          "& em":        { fontStyle: "italic" },
+          fontFamily: C.serif, fontWeight: 300, fontSize: "1.15rem",
+          letterSpacing: "0.16em", color: heroMode ? C.white : C.black,
+          textDecoration: "none", transition: "color 0.4s",
+          "& em": { fontStyle: "italic" },
         }}>
           Amour <em>Estilo</em>
         </Typography>
-
-        {/* Desktop links */}
         <Stack direction="row" spacing={4} sx={{ display: { xs: "none", md: "flex" } }}>
           {links.map(link => (
             <Typography key={link} component="a" href="#" sx={{
-              fontFamily:    C.sans, fontWeight: 300,
-              fontSize:      "0.58rem", letterSpacing: "0.3em",
-              textTransform: "uppercase",
-              color:         heroMode ? "rgba(255,255,255,0.65)" : C.g3,
-              textDecoration:"none",
-              transition:    "color 0.3s",
-              "&:hover":     { color: heroMode ? C.white : C.black },
+              fontFamily: C.sans, fontWeight: 300, fontSize: "0.58rem",
+              letterSpacing: "0.3em", textTransform: "uppercase",
+              color: heroMode ? "rgba(255,255,255,0.65)" : C.g3,
+              textDecoration: "none", transition: "color 0.3s",
+              "&:hover": { color: heroMode ? C.white : C.black },
             }}>
               {link}
             </Typography>
           ))}
         </Stack>
-
-        {/* CTA */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
           <Box component="a" href="mailto:book@amourestilo.com" sx={{
-            display:       { xs: "none", sm: "inline-block" },
-            fontFamily:    C.sans, fontWeight: 300,
-            fontSize:      "0.55rem", letterSpacing: "0.32em",
-            textTransform: "uppercase",
-            px:            2.5, py: 1.2,
-            border:        `0.5px solid ${heroMode ? "rgba(255,255,255,0.4)" : C.black}`,
-            color:         heroMode ? C.white : C.black,
-            textDecoration:"none",
-            transition:    "all 0.3s",
-            "&:hover":     { bgcolor: heroMode ? C.white : C.black, color: heroMode ? C.black : C.white },
+            display: { xs: "none", sm: "inline-block" },
+            fontFamily: C.sans, fontWeight: 300, fontSize: "0.55rem",
+            letterSpacing: "0.32em", textTransform: "uppercase",
+            px: 2.5, py: 1.2,
+            border: `0.5px solid ${heroMode ? "rgba(255,255,255,0.4)" : C.black}`,
+            color: heroMode ? C.white : C.black,
+            textDecoration: "none", transition: "all 0.3s",
+            "&:hover": { bgcolor: heroMode ? C.white : C.black, color: heroMode ? C.black : C.white },
           }}>
             Book a Session
           </Box>
-          <IconButton
-            onClick={() => setMobileOpen(true)}
-            sx={{ display: { md: "none" }, color: heroMode ? C.white : C.black }}
-          >
+          <IconButton onClick={() => setMobileOpen(true)} sx={{ display: { md: "none" }, color: heroMode ? C.white : C.black }}>
             <Typography sx={{ fontFamily: C.sans, fontSize: "0.7rem", letterSpacing: "0.1em" }}>☰</Typography>
           </IconButton>
         </Box>
       </Box>
-
-      {/* Mobile Drawer */}
       <Drawer anchor="right" open={mobileOpen} onClose={() => setMobileOpen(false)}
         PaperProps={{ sx: { width: "80vw", maxWidth: 320, bgcolor: C.black, p: 4 } }}>
         <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 5 }}>
@@ -904,8 +685,7 @@ const StickyNav = () => {
             <Typography key={link} component="a" href="#" onClick={() => setMobileOpen(false)} sx={{
               fontFamily: C.serif, fontWeight: 300, fontSize: "1.6rem",
               color: C.white, textDecoration: "none",
-              borderBottom: `0.5px solid rgba(255,255,255,0.08)`,
-              pb: 2,
+              borderBottom: `0.5px solid rgba(255,255,255,0.08)`, pb: 2,
               "&:hover": { color: C.g4 },
             }}>
               {link}
@@ -932,13 +712,14 @@ export default function AmourEstiloHomePage() {
       <Box sx={{ bgcolor: C.white, overflowX: "hidden" }}>
         <StickyNav />
         <HeroSection />
-        <StatementStrip />
+        <BrandsSection />
         <ServicesSection />
-        <BookingBanner1 />
         <PortfolioSection />
         <LooksSection />
+        <BookingBanner1 />
         <BookingBanner2 />
         <AboutStrip />
+        <BookingBanner2 />
         <InstagramStrip />
         <Footer />
       </Box>
