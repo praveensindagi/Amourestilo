@@ -444,9 +444,9 @@ const BookingBanner2 = () => (
 // SECTION 8 — ABOUT STRIP
 // ═══════════════════════════════════════════════════════════════════════════════
 const STATS = [
-  { num: "500+", label: "Looks Created"    },
+  { num: "002", label: "Looks Created"    },
   { num: "7",    label: "Service Verticals" },
-  { num: "∞",    label: "Cities Reached"   },
+  { num: "1",    label: "Cities Reached"   },
 ];
 
 const AboutStrip = () => (
@@ -465,24 +465,7 @@ const AboutStrip = () => (
             <BtnGhost href="/about">Discover Our Story</BtnGhost>
           </FadeUp>
         </Grid>
-        <Grid item xs={12} md={6}>
-          <FadeUp delay={120}>
-            <Grid container spacing={0} sx={{ border: `0.5px solid ${C.border}` }}>
-              {STATS.map((s, i) => (
-                <Grid item xs={4} key={i} sx={{
-                  p: 3.5,
-                  borderRight: i < 2 ? `0.5px solid ${C.border}` : "none",
-                  textAlign: "center",
-                }}>
-                  <Display sx={{ fontSize: { xs: "2rem", md: "2.8rem" }, color: C.black, mb: 1 }}>
-                    {s.num}
-                  </Display>
-                  <Label sx={{ fontSize: "0.52rem", color: C.g4 }}>{s.label}</Label>
-                </Grid>
-              ))}
-            </Grid>
-          </FadeUp>
-        </Grid>
+       
       </Grid>
     </Container>
   </Box>
@@ -585,7 +568,7 @@ const Footer = () => (
         justifyContent: "space-between", alignItems: "center", gap: 2,
       }}>
         <Label sx={{ color: "rgba(255,255,255,0.18)", fontSize: "0.5rem" }}>
-          © 2025 Amour Estilo. All Rights Reserved. Bengaluru, India.
+          © 2026 Amour Estilo. All Rights Reserved. Bengaluru, India.
         </Label>
         <Stack direction="row" spacing={3}>
           {["Privacy Policy", "Terms of Service", "Instagram"].map((l, i) => (
@@ -720,7 +703,6 @@ export default function AmourEstiloHomePage() {
         <BookingBanner2 />
         <AboutStrip />
         <BookingBanner2 />
-        <InstagramStrip />
         <Footer />
       </Box>
     </ThemeProvider>

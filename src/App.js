@@ -6,6 +6,8 @@ import Amourestilohomepage from './Components/Amourestilohomepage';
 import Amourestilocareers from './Components/Amourestilocareers';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import HouseOfAmourEstilo from './Components/HouseOfAmourEstilo';
+import SkinColorTheory from './Components/SkinColorTheory.jsx';
+import Amourestiloexperience from './Components/Amourestiloexperience';
 
 function App() {
   return (
@@ -19,6 +21,8 @@ function App() {
         <Route path="/HouseOfAmourEstilo" element={< HouseOfAmourEstilo/>} />
         <Route path="/AmourAppointmentBooking" element={<AmourAppointmentBooking />} />
         <Route path="/Amourestilocareers" element={<Amourestilocareers />} />
+        <Route path="/SkinColorTheory" element={<SkinColorTheory />} />
+                <Route path="/Amourestiloexperience" element={<Amourestiloexperience />} />
 
 
       </Routes>

@@ -26,11 +26,17 @@ const theme = createTheme({
 });
 
 const mainMenu = [
+ 
   { name: "Home", path: "/" },
-  { name: "Book Appointment", path: "/Amourappointmentbooking" },
-  { name: "MAISON AMOUR ESTILO", path: "/AmourEstiloAbout" },
-  { name: "Skin Assessment", path: "/HouseOfAmourEstilo" },
-  { name: "Careers", path: "/Amourestilocareers" }
+  { name: "Reserve Your Experience", path: "/Amourappointmentbooking" },
+  { name: "Maison Amour Estilo", path: "/AmourEstiloAbout" },
+  { name: "Bespoke Experiences", path: "/Amourestiloexperience" },
+  { name: "Skin Consultation", path: "/HouseOfAmourEstilo" },
+  { name: "Personal Color Analysis", path: "/SkinColorTheory" },
+  { name: "Join The Maison", path: "/Amourestilocareers" }
+
+
+  
 ];
 const subMenu = ["Customer Care", "Store Locator", "Sustainability"];
 
