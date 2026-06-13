@@ -8,17 +8,18 @@ const STYLES = `
   * { box-sizing: border-box; }
   .ae-root { font-family: 'DM Sans', sans-serif; }
 
-  .ae-topbar { flex-wrap: wrap; row-gap: 8px; }
+  .ae-topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 60px; background: #0A0A0A; }
+  .ae-look-indicator { display: flex; align-items: center; gap: 6px; }
 
-  .ae-main { display: flex; max-width: 1280px; margin: 0 auto; min-height: calc(100vh - 56px); align-items: flex-start; }
+  .ae-main { display: flex; max-width: 1280px; margin: 0 auto; min-height: calc(100vh - 60px); align-items: flex-start; }
   .ae-side-left { width: 220px; flex-shrink: 0; padding: 28px 0 28px 24px; border-right: 0.5px solid #EBEBEB; display: flex; flex-direction: column; }
   .ae-content { flex: 1; min-width: 0; padding: 28px 28px 60px; }
-  .ae-side-right { width: 260px; flex-shrink: 0; border-left: 0.5px solid #EBEBEB; padding: 28px 20px; background: #0A0A0A; position: sticky; top: 56px; align-self: flex-start; height: calc(100vh - 56px); }
+  .ae-side-right { width: 260px; flex-shrink: 0; border-left: 0.5px solid #EBEBEB; padding: 28px 20px; background: #0A0A0A; position: sticky; top: 60px; align-self: flex-start; height: calc(100vh - 60px); }
 
   .ae-mobile-tabs { display: none; }
   .ae-mobile-bar { display: none; }
 
-  .ae-brand-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .ae-brand-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 0 28px; }
 
   @media (max-width: 1024px) {
     .ae-side-left, .ae-side-right { display: none; }
@@ -26,19 +27,34 @@ const STYLES = `
     .ae-mobile-tabs { display: flex; gap: 0; overflow-x: auto; border-bottom: 1px solid #EBEBEB; margin-bottom: 24px; -webkit-overflow-scrolling: touch; }
     .ae-mobile-tabs::-webkit-scrollbar { display: none; }
     .ae-mobile-bar { display: flex; }
+    .ae-look-indicator { display: none; }
   }
 
   @media (max-width: 640px) {
-    .ae-brand-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-    .ae-summary-grid { grid-template-columns: 1fr !important; }
+    .ae-brand-grid { grid-template-columns: 1fr; }
+    .ae-topbar { padding-left: 16px !important; padding-right: 16px !important; }
   }
 
-  .ae-brand-card { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 14px; border-radius: 4px; cursor: pointer; text-align: left; position: relative; transition: border-color .18s ease, background .18s ease; width: 100%; }
-  .ae-mark { width: 34px; height: 34px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.5px; flex-shrink: 0; }
-  .ae-brand-name { font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; line-height: 1.35; }
+  .ae-brand-row { display: flex; gap: 14px; align-items: flex-start; padding: 14px 2px; border: none; border-bottom: 0.5px solid #ECECEC; cursor: pointer; background: none; width: 100%; text-align: left; transition: background .15s ease; }
+  .ae-brand-row:last-child { border-bottom: none; }
+  .ae-brand-row:hover { background: #FAFAF8; }
+  .ae-list-row { padding: 14px 2px; border-bottom: 0.5px solid #ECECEC; }
+  .ae-list-row:last-child { border-bottom: none; }
+  .ae-radio { width: 15px; height: 15px; border-radius: 50%; border: 1px solid #D6D6D6; flex-shrink: 0; margin-top: 4px; display: flex; align-items: center; justify-content: center; transition: border-color .15s ease; }
+  .ae-radio-dot { width: 6px; height: 6px; border-radius: 50%; background: #C8A96E; }
+  .ae-divider { width: 22px; height: 1px; background: #E2DED7; margin: 1px 0 3px; }
+  .ae-logo { line-height: 1.25; }
+  .ae-brand-name { font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 400; line-height: 1.35; }
   .ae-tag { font-size: 9px; letter-spacing: 1.2px; text-transform: uppercase; font-family: 'DM Sans', sans-serif; display: block; }
   .ae-brand-note { font-size: 11px; font-style: italic; line-height: 1.5; font-family: 'Cormorant Garamond', Georgia, serif; }
-  .ae-check { position: absolute; top: 10px; right: 10px; width: 18px; height: 18px; border-radius: 50%; background: #C8A96E; color: #0A0A0A; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; }
+
+  .ae-row { display: flex; gap: 20px; margin-bottom: 36px; padding-bottom: 32px; border-bottom: 0.5px solid #EFEFEF; }
+  .ae-row:last-child { border-bottom: none; }
+  .ae-row-num { flex-shrink: 0; width: 44px; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 38px; font-weight: 300; color: #E6E1D8; line-height: 1; }
+  @media (max-width: 640px) {
+    .ae-row { gap: 10px; }
+    .ae-row-num { width: 32px; font-size: 28px; }
+  }
 
   .ae-slider { -webkit-appearance: none; appearance: none; width: 100%; height: 2px; background: #2A2A2A; border-radius: 2px; outline: none; }
   .ae-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #C8A96E; cursor: pointer; border: none; }
@@ -334,13 +350,69 @@ function inr(n) {
   return "₹" + Math.round(n).toLocaleString("en-IN");
 }
 
-// Brand "logo" mark — short initials, black tile / white text by default
-function getInitials(name) {
-  const clean = name.replace(/[·'’]/g, "");
-  const skip = new Set(["of", "the", "&", "+", "a"]);
-  const words = clean.split(" ").filter(w => w.length && !skip.has(w.toLowerCase()));
-  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
-  return (words[0][0] + words[1][0]).toUpperCase();
+// Brand "logo" plate — extracts the recognisable house name from a product
+// listing (e.g. "Fenty Beauty Pro Filt'r Soft Matte" → "Fenty Beauty"),
+// rendered as a clean black-on-white logotype plate.
+const BRAND_HOUSES = [
+  "Anastasia Beverly Hills", "Pat McGrath Labs", "Charlotte Tilbury",
+  "House of Lashes", "Velour Lashes", "Too Faced", "Urban Decay",
+  "Huda Beauty", "Rare Beauty", "Fenty Beauty", "Milk Makeup",
+  "Air Optix", "Bausch + Lomb", "La Roche-Posay", "Then I Met You",
+  "Forest Essentials", "Love Earth", "Bobbi Brown", "Laura Mercier",
+  "Kiko Milano", "One Size", "Kay Beauty", "Estée Lauder",
+  "L.A. Girl", "St. Ives",
+].sort((a, b) => b.length - a.length);
+
+function getLogoLabel(name) {
+  const house = BRAND_HOUSES.find(h => name.startsWith(h));
+  if (house) return house;
+  return name.split(" ")[0];
+}
+
+// Houses rendered as italic serif wordmarks (fashion / luxury-script feel)
+const SERIF_ITALIC = new Set([
+  "Charlotte Tilbury", "Huda Beauty", "Pat McGrath Labs", "Estée Lauder",
+  "Rare Beauty", "Then I Met You", "Forest Essentials", "Love Earth",
+  "Tatcha", "Laneige", "Velour Lashes", "Kiehl's", "House of Lashes",
+]);
+
+// Houses rendered as bold, tightly-set sans wordmarks
+const BOLD_SANS = new Set([
+  "NARS", "Fenty Beauty", "M·A·C", "Too Faced", "Bobbi Brown",
+  "Maybelline", "Lakmé", "Tarte",
+]);
+
+function BrandLogo({ name, active }) {
+  const logo = getLogoLabel(name);
+  const color = active ? "#0A0A0A" : "#B9B4AC";
+  let style = {
+    fontFamily: "'DM Sans', sans-serif",
+    fontWeight: 500,
+    fontSize: 14,
+    letterSpacing: 2,
+    textTransform: "uppercase",
+    color,
+  };
+  if (SERIF_ITALIC.has(logo)) {
+    style = {
+      fontFamily: "'Cormorant Garamond', Georgia, serif",
+      fontStyle: "italic",
+      fontWeight: 500,
+      fontSize: 19,
+      letterSpacing: 0.5,
+      color,
+    };
+  } else if (BOLD_SANS.has(logo)) {
+    style = {
+      fontFamily: "'DM Sans', sans-serif",
+      fontWeight: 700,
+      fontSize: 15,
+      letterSpacing: 1.5,
+      textTransform: "uppercase",
+      color,
+    };
+  }
+  return <div className="ae-logo" style={style}>{logo}</div>;
 }
 
 function calcPricing(selections, km) {
@@ -416,90 +488,89 @@ function LookSelector({ activeLook, onSelect }) {
   );
 }
 
-// ─── BRAND CARD (logo-chip style) ─────────────────────────────────────────────
+// ─── BRAND ROW (minimal, no boxes or borders) ─────────────────────────────────
 function BrandCard({ brand, selected, isSuggestion, onToggle }) {
-  const initials = getInitials(brand.name);
   return (
-    <button
-      onClick={onToggle}
-      className="ae-brand-card"
-      style={{
-        background: selected ? "#0A0A0A" : "#FFFFFF",
-        border: selected ? "1px solid #0A0A0A" : "1px solid #EBEBEB",
-      }}
-    >
-      {selected && <div className="ae-check">✓</div>}
-
-      {/* Brand "logo" mark — black tile, white initials (gold/black when selected) */}
-      <div className="ae-mark" style={{ background: selected ? "#C8A96E" : "#0A0A0A", color: selected ? "#0A0A0A" : "#FFFFFF" }}>
-        {initials}
+    <button onClick={onToggle} className="ae-brand-row">
+      <div className="ae-radio" style={{ borderColor: selected ? "#0A0A0A" : "#D6D6D6" }}>
+        {selected && <span className="ae-radio-dot" />}
       </div>
 
-      <div className="ae-brand-name" style={{ color: selected ? "#FFFFFF" : "#0A0A0A" }}>
-        {brand.name}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <BrandLogo name={brand.name} active={selected} />
+
+        <div className="ae-divider" />
+
+        <div className="ae-brand-name" style={{ color: selected ? "#666" : "#AAAAAA" }}>
+          {brand.name}
+        </div>
+
+        {(isSuggestion || brand.popular) && (
+          <div style={{ marginTop: 2 }}>
+            {isSuggestion && <span className="ae-tag" style={{ color: "#C8A96E" }}>✦ Artist's Suggestion</span>}
+            {brand.popular && <span className="ae-tag" style={{ color: "#BBBBBB" }}>● Most Searched</span>}
+          </div>
+        )}
+
+        {brand.note && (
+          <div className="ae-brand-note" style={{ color: "#999", marginTop: 2 }}>
+            {brand.note}
+          </div>
+        )}
       </div>
-
-      {(isSuggestion || brand.popular) && (
-        <div>
-          {isSuggestion && <span className="ae-tag" style={{ color: "#C8A96E" }}>✦ Artist's Suggestion</span>}
-          {brand.popular && <span className="ae-tag" style={{ color: selected ? "#888" : "#BBBBBB" }}>● Most Searched</span>}
-        </div>
-      )}
-
-      {brand.note && (
-        <div className="ae-brand-note" style={{ color: selected ? "#888" : "#999" }}>
-          {brand.note}
-        </div>
-      )}
     </button>
   );
 }
 
 // ─── PRODUCT ROW ──────────────────────────────────────────────────────────────
-function ProductRow({ item, activeLook, selections, onSelect }) {
+function ProductRow({ item, index, activeLook, selections, onSelect }) {
   const sel = selections[item.id];
   const isComplete = !!sel;
+  const num = String(index + 1).padStart(2, "0");
 
   return (
-    <div style={{ marginBottom: 32 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, gap: 8, flexWrap: "wrap" }}>
-        <div>
-          <div style={{ fontSize: 9, letterSpacing: 3, color: "#C0B49A", textTransform: "uppercase", fontFamily: "DM Sans, sans-serif", marginBottom: 3 }}>
-            {item.type}
+    <div className="ae-row">
+      <div className="ae-row-num">{num}</div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, gap: 8, flexWrap: "wrap" }}>
+          <div>
+            <div style={{ fontSize: 9, letterSpacing: 3, color: "#C0B49A", textTransform: "uppercase", fontFamily: "DM Sans, sans-serif", marginBottom: 3 }}>
+              {item.type}
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+              <h3 style={{ fontSize: 19, fontFamily: "'Cormorant Garamond', Georgia, serif", color: "#0A0A0A", margin: 0, fontWeight: 500, letterSpacing: 0.3 }}>
+                {item.name}
+              </h3>
+              {isComplete && (
+                <span style={{ fontSize: 9, color: "#C8A96E", letterSpacing: 2, textTransform: "uppercase", fontFamily: "DM Sans, sans-serif" }}>
+                  ✓ Selected
+                </span>
+              )}
+            </div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-            <h3 style={{ fontSize: 16, fontFamily: "'Cormorant Garamond', Georgia, serif", color: "#0A0A0A", margin: 0, fontWeight: 500, letterSpacing: 0.3 }}>
-              {item.name}
-            </h3>
-            {isComplete && (
-              <span style={{ fontSize: 9, color: "#C8A96E", letterSpacing: 2, textTransform: "uppercase", fontFamily: "DM Sans, sans-serif" }}>
-                ✓ Selected
-              </span>
-            )}
-          </div>
+          {sel && (
+            <button
+              onClick={() => onSelect(item.id, null)}
+              style={{ background: "none", border: "none", fontSize: 11, color: "#CCCCCC", cursor: "pointer", fontFamily: "DM Sans, sans-serif", padding: "4px 8px" }}
+            >
+              Clear
+            </button>
+          )}
         </div>
-        {sel && (
-          <button
-            onClick={() => onSelect(item.id, null)}
-            style={{ background: "none", border: "none", fontSize: 11, color: "#CCCCCC", cursor: "pointer", fontFamily: "DM Sans, sans-serif", padding: "4px 8px" }}
-          >
-            Clear
-          </button>
-        )}
-      </div>
-      <div className="ae-brand-grid">
-        {item.brands.map(brand => {
-          const isSuggestion = activeLook ? brand.looks?.includes(activeLook.id) : false;
-          return (
-            <BrandCard
-              key={brand.name}
-              brand={brand}
-              selected={sel?.name === brand.name}
-              isSuggestion={isSuggestion}
-              onToggle={() => onSelect(item.id, sel?.name === brand.name ? null : brand)}
-            />
-          );
-        })}
+        <div className="ae-brand-grid">
+          {item.brands.map(brand => {
+            const isSuggestion = activeLook ? brand.looks?.includes(activeLook.id) : false;
+            return (
+              <BrandCard
+                key={brand.name}
+                brand={brand}
+                selected={sel?.name === brand.name}
+                isSuggestion={isSuggestion}
+                onToggle={() => onSelect(item.id, sel?.name === brand.name ? null : brand)}
+              />
+            );
+          })}
+        </div>
       </div>
     </div>
   );
@@ -583,9 +654,18 @@ function EstimatePanel({ selections, compact }) {
 export default function AmourEstiloV4() {
   const [phase, setPhase] = useState("intro");
   const [clientName, setClientName] = useState("");
-  const [activeLook, setActiveLook] = useState(null);
+  const [activeLook, setActiveLook] = useState(LOOKS[0]);
   const [activeStep, setActiveStep] = useState(0);
-  const [selections, setSelections] = useState({});
+  const [selections, setSelections] = useState(() => {
+    const sel = {};
+    CATALOG.forEach(cat => {
+      cat.items.forEach(item => {
+        const pick = item.brands.find(b => b.looks?.includes(LOOKS[0].id));
+        if (pick) sel[item.id] = pick;
+      });
+    });
+    return sel;
+  });
   const [km, setKm] = useState(8);
 
   const totalSelected = Object.values(selections).filter(Boolean).length;
@@ -739,121 +819,130 @@ export default function AmourEstiloV4() {
           )}
 
           {/* Selected products */}
-          <div style={{ marginBottom: 36 }}>
+          <div style={{ marginBottom: 8 }}>
             {CATALOG.map(cat => {
               const done = cat.items.filter(it => selections[it.id]);
               if (!done.length) return null;
               return (
-                <div key={cat.slug} style={{ marginBottom: 24 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
-                    <span style={{ fontSize: 14, color: "#C8A96E", fontFamily: "DM Sans, sans-serif" }}>{cat.icon}</span>
-                    <span style={{ fontSize: 9, letterSpacing: 3, color: "#888", textTransform: "uppercase", fontFamily: "DM Sans, sans-serif" }}>{cat.category}</span>
+                <div key={cat.slug} style={{ marginBottom: 8 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 28, marginBottom: 4 }}>
+                    <span style={{ fontSize: 13, color: "#C8A96E", fontFamily: "DM Sans, sans-serif" }}>{cat.icon}</span>
+                    <span style={{ fontSize: 9, letterSpacing: 3, color: "#AAAAAA", textTransform: "uppercase", fontFamily: "DM Sans, sans-serif" }}>{cat.category}</span>
                     <div style={{ flex: 1, height: "0.5px", background: "#EBEBEB" }} />
                   </div>
-                  <div className="ae-summary-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 8 }}>
-                    {done.map(item => {
-                      const brand = selections[item.id];
-                      const isSuggestion = activeLook?.id && brand.looks?.includes(activeLook.id);
-                      const initials = getInitials(brand.name);
-                      return (
-                        <div key={item.id} style={{ padding: "12px 14px", background: "#FFFFFF", border: "0.5px solid #EBEBEB", borderRadius: 3, display: "flex", gap: 12, alignItems: "flex-start" }}>
-                          <div className="ae-mark" style={{ background: "#0A0A0A", color: "#FFFFFF" }}>{initials}</div>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: 10, color: "#BBBBBB", fontFamily: "DM Sans, sans-serif", marginBottom: 3, textTransform: "uppercase", letterSpacing: 1 }}>{item.name}</div>
-                            <div style={{ fontSize: 13, color: "#0A0A0A", fontFamily: "DM Sans, sans-serif", fontWeight: 500 }}>{brand.name}</div>
-                            <div style={{ display: "flex", gap: 8, marginTop: 3, flexWrap: "wrap" }}>
-                              {isSuggestion && (
-                                <span className="ae-tag" style={{ color: "#C8A96E" }}>✦ Artist's Suggestion</span>
-                              )}
-                              {brand.popular && (
-                                <span className="ae-tag" style={{ color: "#BBBBBB" }}>● Most Searched</span>
-                              )}
+                  {done.map(item => {
+                    const brand = selections[item.id];
+                    const isSuggestion = activeLook?.id && brand.looks?.includes(activeLook.id);
+                    return (
+                      <div key={item.id} className="ae-list-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 9, color: "#C0B49A", fontFamily: "DM Sans, sans-serif", marginBottom: 5, textTransform: "uppercase", letterSpacing: 2 }}>{item.name}</div>
+                          <BrandLogo name={brand.name} active={true} />
+                          <div style={{ fontSize: 11, color: "#AAAAAA", fontFamily: "DM Sans, sans-serif", marginTop: 4 }}>{brand.name}</div>
+                          {(isSuggestion || brand.popular) && (
+                            <div style={{ display: "flex", gap: 10, marginTop: 5, flexWrap: "wrap" }}>
+                              {isSuggestion && <span className="ae-tag" style={{ color: "#C8A96E" }}>✦ Artist's Suggestion</span>}
+                              {brand.popular && <span className="ae-tag" style={{ color: "#BBBBBB" }}>● Most Searched</span>}
                             </div>
-                            <div style={{ fontSize: 11, color: "#999", fontFamily: "DM Sans, sans-serif", marginTop: 4 }}>{inr(brand.mrp)}</div>
-                          </div>
+                          )}
                         </div>
-                      );
-                    })}
-                  </div>
+                        <div style={{ fontSize: 13, color: "#999", fontFamily: "'Cormorant Garamond', Georgia, serif", flexShrink: 0, marginTop: 2 }}>{inr(brand.mrp)}</div>
+                      </div>
+                    );
+                  })}
                 </div>
               );
             })}
           </div>
 
           {/* Distance */}
-          <div style={{ marginBottom: 24, padding: "18px 20px", background: "#FFFFFF", border: "0.5px solid #EBEBEB", borderRadius: 4 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 10, flexWrap: "wrap", gap: 8 }}>
-              <div style={{ fontSize: 9, letterSpacing: 3, color: "#AAAAAA", textTransform: "uppercase", fontFamily: "DM Sans, sans-serif" }}>
-                Your location · distance from MG Road, central Bengaluru
-              </div>
-              <div style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 20, color: "#0A0A0A" }}>{km} km</div>
-            </div>
-            <input
-              type="range" min="0" max="50" step="1" value={km}
-              onChange={e => setKm(Number(e.target.value))}
-              className="ae-slider-light"
-            />
-            <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6, fontSize: 9, color: "#CCCCCC", fontFamily: "DM Sans, sans-serif", letterSpacing: 1 }}>
-              <span>0 km</span>
-              <span>50 km</span>
-            </div>
-          </div>
-
-          {/* Pricing breakdown — simple: product cost, artist cost, travel charge */}
-          <div style={{ background: "#0A0A0A", borderRadius: 4, overflow: "hidden" }}>
-            <div style={{ padding: "26px 24px 18px", borderBottom: "0.5px solid #1A1A1A" }}>
-              <div style={{ fontSize: 9, letterSpacing: 4, color: "#555", textTransform: "uppercase", fontFamily: "DM Sans, sans-serif", marginBottom: 8 }}>
-                Your estimate
-              </div>
-              <div style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 26, color: "#FFFFFF", fontWeight: 300, letterSpacing: 1 }}>
-                Three simple charges
-              </div>
-            </div>
-            <div style={{ padding: "20px 24px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
-                <div>
-                  <div style={{ fontSize: 13, color: "#CCCCCC", fontFamily: "DM Sans, sans-serif" }}>Product cost</div>
-                  <div style={{ fontSize: 10, color: "#555", fontFamily: "DM Sans, sans-serif", marginTop: 2 }}>
-                    20% of {inr(p.totalMRP)} MRP{p.totalMRP * 0.2 > PRODUCT_CAP ? `, capped at ${inr(PRODUCT_CAP)}` : ""}
-                  </div>
+          <div className="ae-list-row" style={{ marginTop: 12 }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
+                <div style={{ fontSize: 9, letterSpacing: 3, color: "#AAAAAA", textTransform: "uppercase", fontFamily: "DM Sans, sans-serif" }}>
+                  Your location · distance from MG Road, central Bengaluru
                 </div>
-                <span style={{ fontSize: 15, color: "#FFFFFF", fontFamily: "DM Sans, sans-serif" }}>{inr(p.productCharge)}</span>
+                <div style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 20, color: "#0A0A0A" }}>{km} km</div>
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
-                <div>
-                  <div style={{ fontSize: 13, color: "#CCCCCC", fontFamily: "DM Sans, sans-serif" }}>Artist cost</div>
-                  <div style={{ fontSize: 10, color: "#555", fontFamily: "DM Sans, sans-serif", marginTop: 2 }}>Guaranteed minimum fee</div>
-                </div>
-                <span style={{ fontSize: 15, color: "#FFFFFF", fontFamily: "DM Sans, sans-serif" }}>{inr(ARTIST_BASE)}</span>
+              <input
+                type="range" min="0" max="50" step="1" value={km}
+                onChange={e => setKm(Number(e.target.value))}
+                className="ae-slider-light"
+              />
+              <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6, fontSize: 9, color: "#CCCCCC", fontFamily: "DM Sans, sans-serif", letterSpacing: 1 }}>
+                <span>0 km</span>
+                <span>50 km</span>
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 18 }}>
-                <div>
-                  <div style={{ fontSize: 13, color: "#CCCCCC", fontFamily: "DM Sans, sans-serif" }}>Travel charge</div>
-                  <div style={{ fontSize: 10, color: "#555", fontFamily: "DM Sans, sans-serif", marginTop: 2 }}>
-                    {inr(TRAVEL_BASE)} base + {inr(TRAVEL_PER_KM)}/km × {km} km from MG Road
-                  </div>
-                </div>
-                <span style={{ fontSize: 15, color: "#FFFFFF", fontFamily: "DM Sans, sans-serif" }}>{inr(p.travel)}</span>
-              </div>
-
-              <div style={{ background: "#C8A96E", padding: "16px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", borderRadius: 2 }}>
-                <div>
-                  <div style={{ fontSize: 9, letterSpacing: 3, color: "#0A0A0A", textTransform: "uppercase", fontFamily: "DM Sans, sans-serif", fontWeight: 600 }}>Total estimate</div>
-                  <div style={{ fontSize: 9, color: "#6B5A2A", fontFamily: "DM Sans, sans-serif", marginTop: 2 }}>Product + artist + travel</div>
-                </div>
-                <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 30, color: "#0A0A0A", fontWeight: 400 }}>{inr(p.total)}</span>
-              </div>
-              <p style={{ fontSize: 10, color: "#333", lineHeight: 1.8, fontFamily: "DM Sans, sans-serif", marginTop: 14 }}>
-                * Final quote confirmed at booking. Artist minimum ₹7,500. Product contribution capped at ₹25,000. Travel calculated from MG Road, central Bengaluru.
-              </p>
             </div>
           </div>
 
-          <div style={{ display: "flex", gap: 10, marginTop: 20, flexWrap: "wrap" }}>
+          {/* Pricing breakdown — clean, low-contrast, three simple charges */}
+          <div style={{ marginTop: 36 }}>
+            <div style={{ padding: "20px 22px", background: "#F7F5F2", borderLeft: "2px solid #C8A96E", borderRadius: "0 3px 3px 0", marginBottom: 22, display: "flex", alignItems: "center", gap: 16 }}>
+              <div style={{ width: 44, height: 44, borderRadius: "50%", border: "1px solid #C8A96E", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, background: "#FFFFFF" }}>
+                <span style={{ fontSize: 17, color: "#C8A96E" }}>◈</span>
+              </div>
+              <div>
+                <div style={{ fontSize: 9, letterSpacing: 4, color: "#C8A96E", textTransform: "uppercase", fontFamily: "DM Sans, sans-serif", marginBottom: 4 }}>
+                  Your estimate
+                </div>
+                <div style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(22px, 4vw, 28px)", color: "#0A0A0A", fontWeight: 300, letterSpacing: 0.5 }}>
+                  Three simple charges
+                </div>
+              </div>
+            </div>
+
+            <div className="ae-list-row">
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 13, color: "#0A0A0A", fontFamily: "DM Sans, sans-serif" }}>Product cost</div>
+                <div style={{ fontSize: 11, color: "#AAAAAA", fontFamily: "DM Sans, sans-serif", marginTop: 2 }}>
+                  20% of {inr(p.totalMRP)} MRP{p.totalMRP * 0.2 > PRODUCT_CAP ? `, capped at ${inr(PRODUCT_CAP)}` : ""}
+                </div>
+              </div>
+              <span style={{ fontSize: 16, color: "#0A0A0A", fontFamily: "'Cormorant Garamond', Georgia, serif" }}>{inr(p.productCharge)}</span>
+            </div>
+            <div className="ae-list-row">
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 13, color: "#0A0A0A", fontFamily: "DM Sans, sans-serif" }}>Artist cost</div>
+                <div style={{ fontSize: 11, color: "#AAAAAA", fontFamily: "DM Sans, sans-serif", marginTop: 2 }}>Guaranteed minimum fee</div>
+              </div>
+              <span style={{ fontSize: 16, color: "#0A0A0A", fontFamily: "'Cormorant Garamond', Georgia, serif" }}>{inr(ARTIST_BASE)}</span>
+            </div>
+            <div className="ae-list-row">
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 13, color: "#0A0A0A", fontFamily: "DM Sans, sans-serif" }}>Travel charge</div>
+                <div style={{ fontSize: 11, color: "#AAAAAA", fontFamily: "DM Sans, sans-serif", marginTop: 2 }}>
+                  {inr(TRAVEL_BASE)} base + {inr(TRAVEL_PER_KM)}/km × {km} km from MG Road
+                </div>
+              </div>
+              <span style={{ fontSize: 16, color: "#0A0A0A", fontFamily: "'Cormorant Garamond', Georgia, serif" }}>{inr(p.travel)}</span>
+            </div>
+
+            {/* Total — quiet emphasis via rule + large serif figure, no filled block */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: 22, paddingTop: 18, borderTop: "1px solid #C8A96E" }}>
+              <div>
+                <div style={{ fontSize: 9, letterSpacing: 3, color: "#AAAAAA", textTransform: "uppercase", fontFamily: "DM Sans, sans-serif" }}>Total estimate</div>
+                <div style={{ fontSize: 11, color: "#BBBBBB", fontFamily: "DM Sans, sans-serif", marginTop: 2 }}>Product + artist + travel</div>
+              </div>
+              <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 36, color: "#0A0A0A", fontWeight: 300 }}>{inr(p.total)}</span>
+            </div>
+            <p style={{ fontSize: 10, color: "#BBBBBB", lineHeight: 1.8, fontFamily: "DM Sans, sans-serif", marginTop: 14 }}>
+              * Final quote confirmed at booking. Artist minimum ₹7,500. Product contribution capped at ₹25,000. Travel calculated from MG Road, central Bengaluru.
+            </p>
+          </div>
+
+          <div style={{ display: "flex", gap: 10, marginTop: 28, flexWrap: "wrap" }}>
             <button style={{ flex: 2, minWidth: 180, padding: "16px", background: "#0A0A0A", color: "#FFFFFF", border: "none", borderRadius: 3, fontSize: 10, letterSpacing: 3, textTransform: "uppercase", cursor: "pointer", fontFamily: "DM Sans, sans-serif", fontWeight: 500 }}>
               Book this look
             </button>
-            <button onClick={() => { setSelections({}); setActiveLook(null); setPhase("intro"); setClientName(""); }}
+            <button onClick={() => {
+              const sel = {};
+              CATALOG.forEach(cat => cat.items.forEach(item => {
+                const pick = item.brands.find(b => b.looks?.includes(LOOKS[0].id));
+                if (pick) sel[item.id] = pick;
+              }));
+              setSelections(sel); setActiveLook(LOOKS[0]); setPhase("intro"); setClientName("");
+            }}
               style={{ flex: 1, minWidth: 140, padding: "16px", background: "transparent", color: "#0A0A0A", border: "1px solid #E0E0E0", borderRadius: 3, fontSize: 10, letterSpacing: 3, textTransform: "uppercase", cursor: "pointer", fontFamily: "DM Sans, sans-serif" }}>
               Start over
             </button>
@@ -872,7 +961,7 @@ export default function AmourEstiloV4() {
       <div className="ae-topbar" style={{ background: "#0A0A0A", padding: "14px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 100, gap: 16 }}>
         <div style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 17, color: "#FFFFFF", letterSpacing: 5, flexShrink: 0 }}>AMOUR ESTILO</div>
         {activeLook && (
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <div className="ae-look-indicator">
             <span style={{ fontSize: 8, letterSpacing: 2, color: "#C8A96E", textTransform: "uppercase", fontFamily: "DM Sans, sans-serif" }}>Look:</span>
             <span style={{ fontSize: 11, color: "#888", fontFamily: "DM Sans, sans-serif" }}>{activeLook.name}</span>
           </div>
@@ -970,21 +1059,25 @@ export default function AmourEstiloV4() {
           )}
 
           {/* Category heading */}
-          <div style={{ marginBottom: 28, paddingBottom: 20, borderBottom: "0.5px solid #EBEBEB" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
-              <span style={{ fontSize: 18, color: "#D0CCC4", fontFamily: "DM Sans, sans-serif" }}>{CATALOG[activeStep].icon}</span>
-              <span style={{ fontSize: 9, letterSpacing: 4, color: "#AAAAAA", textTransform: "uppercase", fontFamily: "DM Sans, sans-serif" }}>
-                {activeStep + 1} / {CATALOG.length}
-              </span>
+          <div style={{ marginBottom: 32, paddingBottom: 24, borderBottom: "0.5px solid #EBEBEB" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 4 }}>
+              <div style={{ width: 48, height: 48, borderRadius: "50%", border: "1px solid #E5E1D8", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, background: "#FFFFFF" }}>
+                <span style={{ fontSize: 18, color: "#C8A96E" }}>{CATALOG[activeStep].icon}</span>
+              </div>
+              <div>
+                <span style={{ fontSize: 9, letterSpacing: 4, color: "#AAAAAA", textTransform: "uppercase", fontFamily: "DM Sans, sans-serif" }}>
+                  {String(activeStep + 1).padStart(2, "0")} / {String(CATALOG.length).padStart(2, "0")}
+                </span>
+                <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(24px, 4vw, 34px)", fontWeight: 300, color: "#0A0A0A", margin: "2px 0 0", letterSpacing: 0.5 }}>
+                  {CATALOG[activeStep].category}
+                </h2>
+              </div>
             </div>
-            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(24px, 4vw, 34px)", fontWeight: 300, color: "#0A0A0A", margin: "0 0 6px", letterSpacing: 0.5 }}>
-              {CATALOG[activeStep].category}
-            </h2>
-            <p style={{ fontSize: 12, color: "#999", fontFamily: "DM Sans, sans-serif", margin: 0, fontStyle: "italic" }}>
+            <p style={{ fontSize: 12, color: "#999", fontFamily: "DM Sans, sans-serif", margin: "0 0 0 64px", fontStyle: "italic" }}>
               {CATALOG[activeStep].subtitle}
             </p>
             {activeLook && (
-              <p style={{ marginTop: 10, fontSize: 10, color: "#999", fontFamily: "DM Sans, sans-serif", letterSpacing: 0.5 }}>
+              <p style={{ margin: "10px 0 0 64px", fontSize: 10, color: "#999", fontFamily: "DM Sans, sans-serif", letterSpacing: 0.5 }}>
                 <span style={{ color: "#C8A96E" }}>✦ Artist's Suggestion</span> — recommended for {activeLook.name}.{"  "}
                 <span style={{ color: "#BBBBBB" }}>● Most Searched</span> — the world's most-searched pick in this category.
               </p>
@@ -992,10 +1085,11 @@ export default function AmourEstiloV4() {
           </div>
 
           {/* Products */}
-          {CATALOG[activeStep].items.map(item => (
+          {CATALOG[activeStep].items.map((item, idx) => (
             <ProductRow
               key={item.id}
               item={item}
+              index={idx}
               activeLook={activeLook}
               selections={selections}
               onSelect={handleSelect}

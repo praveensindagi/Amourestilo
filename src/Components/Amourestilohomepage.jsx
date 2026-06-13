@@ -700,7 +700,6 @@ export default function AmourEstiloHomePage() {
         <PortfolioSection />
         <LooksSection />
         <BookingBanner1 />
-        <BookingBanner2 />
         <AboutStrip />
         <BookingBanner2 />
         <Footer />
