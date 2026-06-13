@@ -1,5 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
 import BrandsSection from "./BrandsSection";
+import Front from "./Media/Front.png";
+import Hairstyle from "./Media/Hairstyle.jpg";
+import PortfolioVideo from "./Media/Actcocktaillook.mov";
+import Prajna1 from "./Media/Prajna1.jpg";
+//import Prajna2 from "./Media/Prajna2.png";
+//import Prajna3 from "./Media/Prajna3.png";
+//import Prajna4 from "./Media/Prajna4.png";
+//import Prajna5 from "./Media/Prajna5.png";
+
+
+
 import ServicesSection from "./AmourEstiloServices";
 import {
   Box,
@@ -288,12 +299,8 @@ const BookingBanner1 = () => (
 // SECTION 5 — PORTFOLIO GRID
 // ═══════════════════════════════════════════════════════════════════════════════
 const PORTFOLIO = [
-  { label: "The Bombay Bride",  tag: "Bridal",    w: 2, h: 2, bg: "#2e2e2e" },
-  { label: "L'Éclat",          tag: "Editorial",  w: 1, h: 1, bg: "#2e2e2e" },
-  { label: "Noir Screen",      tag: "Film",       w: 1, h: 1, bg: "#3a3a3a" },
-  { label: "Kampala Campaign", tag: "Commercial", w: 1, h: 2, bg: "#242424" },
-  { label: "Mehfil Gala",      tag: "Events",     w: 1, h: 1, bg: "#303030" },
-  { label: "The Quiet Bride",  tag: "Bridal",     w: 1, h: 1, bg: "#1e1e1e" },
+  { label: "The Bombay Bride",  tag: "Bridal",    w: 2, h: 2, bg: "#2e2e2e", media: PortfolioVideo, type: "video" },
+
 ];
 
 const PortfolioItem = ({ item }) => {
@@ -306,21 +313,54 @@ const PortfolioItem = ({ item }) => {
         gridColumn: `span ${item.w}`,
         gridRow:    `span ${item.h}`,
         bgcolor:    item.bg,
-        minHeight:  item.h === 2 ? 480 : 230,
+        minHeight:  item.h === 2 ? 650 : 300,
         position:   "relative",
         overflow:   "hidden",
         cursor:     "pointer",
       }}
     >
-      <Box sx={{
-        position: "absolute", inset: 0,
-        background: `linear-gradient(135deg, ${item.bg} 0%, rgba(0,0,0,0.6) 100%)`,
-        display: "flex", alignItems: "center", justifyContent: "center",
-      }}>
-        <Typography sx={{ fontFamily: C.serif, fontStyle: "italic", fontSize: "1.2rem", color: "rgba(255,255,255,0.12)", letterSpacing: "0.08em" }}>
-          {item.label}
-        </Typography>
-      </Box>
+      {/* Media layer */}
+      {item.type === "video" ? (
+        <Box
+          component="video"
+          src={item.media}
+          autoPlay
+          muted
+          loop
+          playsInline
+          sx={{
+            position: "absolute", inset: 0,
+            width: "100%", height: "100%",
+            objectFit: "cover", display: "block",
+          }}
+        />
+      ) : (
+        <Box
+          component="img"
+          src={item.media}
+          alt={item.label}
+          sx={{
+            position: "absolute", inset: 0,
+            width: "100%", height: "100%",
+            objectFit: "cover", display: "block",
+          }}
+        />
+      )}
+
+      {/* Existing: faint watermark — only shown when no media */}
+      {!item.media && (
+        <Box sx={{
+          position: "absolute", inset: 0,
+          background: `linear-gradient(135deg, ${item.bg} 0%, rgba(0,0,0,0.6) 100%)`,
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>
+          <Typography sx={{ fontFamily: C.serif, fontStyle: "italic", fontSize: "1.2rem", color: "rgba(255,255,255,0.12)", letterSpacing: "0.08em" }}>
+            {item.label}
+          </Typography>
+        </Box>
+      )}
+
+      {/* Existing: hover overlay */}
       <Box sx={{
         position: "absolute", inset: 0,
         background: "rgba(0,0,0,0.55)",
@@ -359,14 +399,10 @@ const PortfolioSection = () => (
 // SECTION 6 — LOOKS SHOWCASE
 // ═══════════════════════════════════════════════════════════════════════════════
 const LOOKS = [
-  { name: "The Bombay Bride",   category: "Bridal",     shade: "#1c1c1c" },
-  { name: "L'Éclat Parisien",  category: "Editorial",  shade: "#282828" },
-  { name: "Noir Screen",       category: "Film",       shade: "#141414" },
-  { name: "Shaadi Glow",       category: "Bridal",     shade: "#202020" },
-  { name: "Campagne Luxe",     category: "Commercial", shade: "#1a1a1a" },
-  { name: "Mehfil Royale",     category: "Events",     shade: "#242424" },
-  { name: "The Quiet Look",    category: "Personal",   shade: "#181818" },
-  { name: "Golden Hour",       category: "Editorial",  shade: "#2a2a2a" },
+  { name: "Smoky Eye", category: "EVENING", shade: "#2C1810", img: Front },
+  { name: "Nude Glam", category: "DAYTIME", shade: "#C4956A", img: Hairstyle },
+
+  
 ];
 
 const LooksSection = () => (
@@ -390,11 +426,29 @@ const LooksSection = () => (
             position: "relative", overflow: "hidden",
             transition: "transform 0.3s", "&:hover": { transform: "scale(1.01)" },
           }}>
+            {/* ✅ Image layer — added, sits below all overlays */}
+            {look.img && (
+              <Box
+                component="img"
+                src={look.img}
+                alt={look.name}
+                sx={{
+                  position: "absolute", inset: 0,
+                  width: "100%", height: "100%",
+                  objectFit: "cover",
+                  display: "block",
+                }}
+              />
+            )}
+
+            {/* Existing: faint name watermark */}
             <Box sx={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
               <Typography sx={{ fontFamily: C.serif, fontStyle: "italic", fontSize: "1rem", color: "rgba(255,255,255,0.1)" }}>
                 {look.name}
               </Typography>
             </Box>
+
+            {/* Existing: bottom gradient + label */}
             <Box sx={{
               position: "absolute", bottom: 0, left: 0, right: 0, p: 2.5,
               background: "linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%)",
