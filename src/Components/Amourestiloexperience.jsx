@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 // ─── GOOGLE FONTS (kept as the Amour Estilo standard pairing) ────────────────
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap');`;
@@ -523,7 +523,7 @@ function BrandCard({ brand, selected, isSuggestion, onToggle }) {
 }
 
 // ─── PRODUCT ROW ──────────────────────────────────────────────────────────────
-function ProductRow({ item, index, activeLook, selections, onSelect }) {
+function ProductRow({ item, index, activeLook, selections, onSelect, isSmall }) {
   const sel = selections[item.id];
   const isComplete = !!sel;
   const num = String(index + 1).padStart(2, "0");
@@ -557,7 +557,7 @@ function ProductRow({ item, index, activeLook, selections, onSelect }) {
             </button>
           )}
         </div>
-        <div className="ae-brand-grid">
+        <div className="ae-brand-grid" style={{ gridTemplateColumns: isSmall ? "1fr" : "repeat(auto-fit, minmax(280px, 1fr))" }}>
           {item.brands.map(brand => {
             const isSuggestion = activeLook ? brand.looks?.includes(activeLook.id) : false;
             return (
@@ -668,6 +668,17 @@ export default function AmourEstiloV4() {
   });
   const [km, setKm] = useState(8);
 
+  const [vw, setVw] = useState(typeof window !== "undefined" ? window.innerWidth : 1280);
+
+  useEffect(() => {
+    const onResize = () => setVw(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  const isMobile = vw < 1024;   // hide side panels, show mobile tabs/bar
+  const isSmall = vw < 640;     // single-column brand list
+
   const totalSelected = Object.values(selections).filter(Boolean).length;
   const p = calcPricing(selections, km);
 
@@ -695,11 +706,11 @@ export default function AmourEstiloV4() {
   // ── INTRO ──
   if (phase === "intro") {
     return (
-      <div className="ae-root" style={{ minHeight: "100vh", background: "#FAFAFA", display: "flex", flexDirection: "column" }}>
+      <div className="ae-root" style={{ minHeight: "100vh", background: "#FAFAFA", display: "flex", flexDirection: "column", paddingTop: isMobile ? 12 : 0 }}>
         <style>{FONTS}{STYLES}</style>
 
         {/* Header */}
-        <div className="ae-topbar" style={{ background: "#0A0A0A", padding: "20px 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div className="ae-topbar" style={{ background: "#0A0A0A", padding: isMobile ? "16px 18px" : "20px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", borderRadius: isMobile ? 6 : 0 }}>
           <div>
             <div style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 22, color: "#FFFFFF", letterSpacing: 6, fontWeight: 400 }}>AMOUR ESTILO</div>
             <div style={{ fontSize: 8, letterSpacing: 5, color: "#555", textTransform: "uppercase", fontFamily: "DM Sans, sans-serif", marginTop: 2 }}>Bespoke Makeup Experience</div>
@@ -795,10 +806,10 @@ export default function AmourEstiloV4() {
   // ── SUMMARY ──
   if (phase === "summary") {
     return (
-      <div className="ae-root" style={{ minHeight: "100vh", background: "#FAFAFA" }}>
+      <div className="ae-root" style={{ minHeight: "100vh", background: "#FAFAFA", paddingTop: isMobile ? 12 : 0 }}>
         <style>{FONTS}{STYLES}</style>
         {/* Nav */}
-        <div className="ae-topbar" style={{ background: "#0A0A0A", padding: "16px 28px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 50 }}>
+        <div className="ae-topbar" style={{ background: "#0A0A0A", padding: isMobile ? "14px 16px" : "16px 28px", display: "flex", alignItems: "center", justifyContent: "space-between", position: isMobile ? "relative" : "sticky", top: 0, zIndex: 50, borderRadius: isMobile ? 6 : 0 }}>
           <div style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 18, color: "#FFFFFF", letterSpacing: 5 }}>AMOUR ESTILO</div>
           <button onClick={() => setPhase("curate")} style={{ background: "none", border: "0.5px solid #333", color: "#666", fontSize: 9, letterSpacing: 2, textTransform: "uppercase", padding: "7px 14px", cursor: "pointer", fontFamily: "DM Sans, sans-serif", borderRadius: 2 }}>
             ← Edit selections
@@ -954,20 +965,20 @@ export default function AmourEstiloV4() {
 
   // ── CURATION ──
   return (
-    <div className="ae-root" style={{ minHeight: "100vh", background: "#FAFAFA" }}>
+    <div className="ae-root" style={{ minHeight: "100vh", background: "#FAFAFA", paddingTop: isMobile ? 12 : 0 }}>
       <style>{FONTS}{STYLES}</style>
 
       {/* Sticky header */}
-      <div className="ae-topbar" style={{ background: "#0A0A0A", padding: "14px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 100, gap: 16 }}>
-        <div style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 17, color: "#FFFFFF", letterSpacing: 5, flexShrink: 0 }}>AMOUR ESTILO</div>
-        {activeLook && (
-          <div className="ae-look-indicator">
+      <div className="ae-topbar" style={{ background: "#0A0A0A", padding: isMobile ? "12px 16px" : "14px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", position: isMobile ? "relative" : "sticky", top: 0, zIndex: 100, gap: isMobile ? 8 : 16, borderRadius: isMobile ? 6 : 0 }}>
+        <div style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: isMobile ? 14 : 17, color: "#FFFFFF", letterSpacing: isMobile ? 2 : 5, flexShrink: 0, whiteSpace: "nowrap" }}>AMOUR ESTILO</div>
+        {activeLook && !isMobile && (
+          <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
             <span style={{ fontSize: 8, letterSpacing: 2, color: "#C8A96E", textTransform: "uppercase", fontFamily: "DM Sans, sans-serif" }}>Look:</span>
             <span style={{ fontSize: 11, color: "#888", fontFamily: "DM Sans, sans-serif" }}>{activeLook.name}</span>
           </div>
         )}
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <EstimatePanel selections={selections} compact={true} />
+        <div style={{ display: "flex", alignItems: "center", gap: isMobile ? 8 : 16, flexShrink: 0 }}>
+          {!isMobile && <EstimatePanel selections={selections} compact={true} />}
           <button
             onClick={() => setPhase("summary")}
             disabled={totalSelected === 0}
@@ -975,7 +986,7 @@ export default function AmourEstiloV4() {
               background: totalSelected > 0 ? "#C8A96E" : "#1E1E1E",
               color: totalSelected > 0 ? "#0A0A0A" : "#444",
               border: "none",
-              padding: "9px 18px",
+              padding: isMobile ? "8px 12px" : "9px 18px",
               fontSize: 9,
               letterSpacing: 2,
               textTransform: "uppercase",
@@ -984,10 +995,11 @@ export default function AmourEstiloV4() {
               fontWeight: 600,
               borderRadius: 2,
               flexShrink: 0,
+              whiteSpace: "nowrap",
               transition: "all 0.2s",
             }}
           >
-            View estimate →
+            {isMobile ? "Estimate →" : "View estimate →"}
           </button>
         </div>
       </div>
@@ -996,6 +1008,7 @@ export default function AmourEstiloV4() {
       <div className="ae-main">
 
         {/* Left sidebar — desktop only */}
+        {!isMobile && (
         <div className="ae-side-left">
           <div style={{ fontSize: 9, letterSpacing: 3, color: "#AAAAAA", textTransform: "uppercase", fontFamily: "DM Sans, sans-serif", marginBottom: 16, paddingLeft: 12 }}>
             {clientName}'s curation
@@ -1039,11 +1052,12 @@ export default function AmourEstiloV4() {
             )}
           </div>
         </div>
+        )}
 
         {/* Content area */}
-        <div className="ae-content">
+        <div className="ae-content" style={{ flex: 1, minWidth: 0, padding: isMobile ? "16px 16px 100px" : "28px 28px 60px" }}>
           {/* Mobile category tabs */}
-          <StepNav steps={CATALOG} active={activeStep} onSelect={setActiveStep} selections={selections} />
+          {isMobile && <StepNav steps={CATALOG} active={activeStep} onSelect={setActiveStep} selections={selections} />}
 
           {/* Look picker — shown on first step */}
           {activeStep === 0 && (
@@ -1093,6 +1107,7 @@ export default function AmourEstiloV4() {
               activeLook={activeLook}
               selections={selections}
               onSelect={handleSelect}
+              isSmall={isSmall}
             />
           ))}
 
@@ -1119,13 +1134,16 @@ export default function AmourEstiloV4() {
         </div>
 
         {/* Right panel — live status (desktop) */}
+        {!isMobile && (
         <div className="ae-side-right">
           <EstimatePanel selections={selections} compact={false} />
         </div>
+        )}
       </div>
 
       {/* Mobile bottom bar */}
-      <div className="ae-mobile-bar" style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "#0A0A0A", borderTop: "0.5px solid #1A1A1A", padding: "12px 20px", alignItems: "center", justifyContent: "space-between", zIndex: 99 }}>
+      {isMobile && (
+      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "#0A0A0A", borderTop: "0.5px solid #1A1A1A", padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", zIndex: 99, boxSizing: "border-box" }}>
         <div>
           <div style={{ fontSize: 9, letterSpacing: 2, color: "#555", textTransform: "uppercase", fontFamily: "DM Sans, sans-serif" }}>Selected</div>
           <div style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 20, color: totalSelected > 0 ? "#C8A96E" : "#333" }}>
@@ -1146,6 +1164,7 @@ export default function AmourEstiloV4() {
           )}
         </div>
       </div>
+      )}
     </div>
   );
 }

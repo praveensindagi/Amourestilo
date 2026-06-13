@@ -26,21 +26,18 @@ const theme = createTheme({
 });
 
 const mainMenu = [
- 
   { name: "Home", path: "/" },
   { name: "Reserve Your Experience", path: "/Amourappointmentbooking" },
   { name: "Maison Amour Estilo", path: "/AmourEstiloAbout" },
   { name: "Bespoke Experiences", path: "/Amourestiloexperience" },
   { name: "Skin Consultation", path: "/HouseOfAmourEstilo" },
   { name: "Personal Color Analysis", path: "/SkinColorTheory" },
-  { name: "Join The Maison", path: "/Amourestilocareers" }
-
-
-  
+  { name: "Join The Maison", path: "/Amourestilocareers" },
 ];
+
 const subMenu = ["Customer Care", "Store Locator", "Sustainability"];
 
-export default function ArmaniSidebarLayout() {
+export default function ArmaniSidebarLayout({ children }) {
   const [open, setOpen] = React.useState(false);
 
   const toggleDrawer = () => setOpen((p) => !p);
@@ -66,7 +63,6 @@ export default function ArmaniSidebarLayout() {
             sx={{ gap: "6px", textTransform: "uppercase" }}
           >
             <MenuIcon fontSize="small" />
-           
           </IconButton>
 
           {/* CENTER BRAND */}
@@ -127,29 +123,30 @@ export default function ArmaniSidebarLayout() {
 
             {/* MAIN MENU */}
             <List disablePadding>
-  {mainMenu.map((item) => (
-    <ListItemButton
-      key={item.name}
-      component={Link}
-      to={item.path}
-      onClick={toggleDrawer}
-      sx={{
-        py: 1.5,
-        px: 0,
-        textTransform: "uppercase",
-        letterSpacing: "2px",
-        fontSize: "13px",
-        color: "#fff",
-        "&:hover": {
-          background: "transparent",
-          opacity: 0.7,
-        },
-      }}
-    >
-      {item.name}
-    </ListItemButton>
-  ))}
-</List>
+              {mainMenu.map((item) => (
+                <ListItemButton
+                  key={item.name}
+                  component={Link}
+                  to={item.path}
+                  onClick={toggleDrawer}
+                  sx={{
+                    py: 1.5,
+                    px: 0,
+                    textTransform: "uppercase",
+                    letterSpacing: "2px",
+                    fontSize: "13px",
+                    color: "#fff",
+                    "&:hover": {
+                      background: "transparent",
+                      opacity: 0.7,
+                    },
+                  }}
+                >
+                  {item.name}
+                </ListItemButton>
+              ))}
+            </List>
+
             <Divider sx={{ my: 4, borderColor: "rgba(255,255,255,0.1)" }} />
 
             {/* SUB MENU */}
@@ -186,8 +183,14 @@ export default function ArmaniSidebarLayout() {
         </Fade>
       </Drawer>
 
+      {/* SPACER — reserves space equal to the fixed AppBar's height so
+          page content is pushed below it instead of rendering underneath */}
+      
+
       {/* PAGE CONTENT */}
-     
+      <Box component="main" sx={{ px: { xs: 2, sm: 4 }, py: 2 }}>
+        {children}
+      </Box>
     </ThemeProvider>
   );
 }
