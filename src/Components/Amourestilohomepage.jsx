@@ -4,6 +4,7 @@ import Front from "./Media/Front.png";
 import Hairstyle from "./Media/Hairstyle.jpg";
 import PortfolioVideo from "./Media/Actcocktaillook.mov";
 import Prajna1 from "./Media/Prajna1.jpg";
+import Amourestiloprocessbanner from "./Amourestiloprocessbanner";
 //import Prajna2 from "./Media/Prajna2.png";
 //import Prajna3 from "./Media/Prajna3.png";
 //import Prajna4 from "./Media/Prajna4.png";
@@ -750,7 +751,7 @@ export default function AmourEstiloHomePage() {
         <StickyNav />
         <HeroSection />
         <BrandsSection />
-        <ServicesSection />
+        <Amourestiloprocessbanner/>
         <PortfolioSection />
         <LooksSection />
         <BookingBanner1 />
