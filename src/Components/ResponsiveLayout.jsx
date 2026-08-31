@@ -7,7 +7,7 @@ import {
   Drawer,
   IconButton,
   List,
-  ListItemButton,
+  ListItemButton, 
   Typography,
   Toolbar,
   Divider,
@@ -33,6 +33,7 @@ const mainMenu = [
   { name: "Skin Consultation", path: "/HouseOfAmourEstilo" },
   { name: "Personal Color Analysis", path: "/SkinColorTheory" },
   { name: "Join The Maison", path: "/Amourestilocareers" },
+  { name: "Join Prive", path: "/AmourEstiloPrive" },
 ];
 
 const subMenu = ["Customer Care", "Store Locator", "Sustainability"];
