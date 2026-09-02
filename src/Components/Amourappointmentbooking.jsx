@@ -816,12 +816,22 @@ const CSS = `
   text-transform:uppercase;
   color:var(--g300)
 }
-/* Firebase invisible reCAPTCHA container */
+/* Firebase invisible reCAPTCHA container — fully hidden, including the
+   floating Google badge that would otherwise appear bottom-right */
 #recaptcha-container{
+  position:fixed !important;
+  bottom:0;
+  right:0;
   min-height:0;
   width:0;
   height:0;
-  overflow:hidden
+  overflow:hidden;
+  opacity:0;
+  pointer-events:none
+}
+.grecaptcha-badge{
+  visibility:hidden !important;
+  opacity:0 !important;
 }
 @media(max-width:580px){
   .ae-card{
@@ -940,7 +950,7 @@ export default function AmourAppointmentBooking() {
       [k]: '',
     }));
   }, []);
-  // ── Firebase reCAPTCHA setup ──────────────────────────────────────
+  // ── Firebase reCAPTCHA setup (invisible, silent) ──────────────────
   const setupRecaptcha = () => {
     if (recaptchaRef.current) {
       return recaptchaRef.current;
@@ -957,15 +967,14 @@ export default function AmourAppointmentBooking() {
       {
         size: 'invisible',
         callback: () => {
-          console.log('Firebase reCAPTCHA verified.');
+          // silent — no UI, no console noise in production
         },
         'expired-callback': () => {
-          console.warn('Firebase reCAPTCHA expired.');
           if (recaptchaRef.current) {
             try {
               recaptchaRef.current.clear();
             } catch (e) {
-              console.warn('reCAPTCHA clear:', e);
+              // silent
             }
           }
           recaptchaRef.current = null;
@@ -1062,10 +1071,6 @@ export default function AmourAppointmentBooking() {
     setOtpErr('');
     try {
       const appVerifier = setupRecaptcha();
-      console.log(
-        '[Amour Estilo] Sending Firebase OTP to:',
-        form.phone
-      );
       const confirmationResult =
         await signInWithPhoneNumber(
           auth,
@@ -1094,10 +1099,6 @@ export default function AmourAppointmentBooking() {
         digitRefs.current[0]?.focus();
       }, 100);
     } catch (err) {
-      console.error(
-        'Firebase OTP error:',
-        err
-      );
       let message =
         'Unable to send OTP. Please check the phone number and try again.';
       if (err?.code === 'auth/invalid-phone-number') {
@@ -1114,11 +1115,11 @@ export default function AmourAppointmentBooking() {
       }
       if (err?.code === 'auth/invalid-app-credential') {
         message =
-          'Firebase reCAPTCHA verification failed. Please refresh the page and try again.';
+          'Verification failed. Please refresh the page and try again.';
       }
       if (err?.code === 'auth/quota-exceeded') {
         message =
-          'Firebase SMS quota has been exceeded. Please use the configured Firebase test number during development.';
+          'SMS quota has been exceeded. Please use the configured Firebase test number during development.';
       }
       setOtpErr(message);
       setBanner({
@@ -1126,15 +1127,12 @@ export default function AmourAppointmentBooking() {
           'OTP could not be sent. Please check the Firebase configuration.',
         type: 'err',
       });
-      // Reset reCAPTCHA so the user can try again
+      // Reset silently so the user can try again
       if (recaptchaRef.current) {
         try {
           recaptchaRef.current.clear();
         } catch (e) {
-          console.warn(
-            'reCAPTCHA clear error:',
-            e
-          );
+          // silent
         }
         recaptchaRef.current = null;
       }
@@ -1173,10 +1171,6 @@ export default function AmourAppointmentBooking() {
         type: 'info',
       });
     } catch (err) {
-      console.error(
-        'Firebase OTP verification error:',
-        err
-      );
       let message =
         'Incorrect OTP. Please check the code and try again.';
       if (err?.code === 'auth/invalid-verification-code') {
@@ -1339,10 +1333,6 @@ export default function AmourAppointmentBooking() {
           ),
       });
     } catch (err) {
-      console.error(
-        'Submit error:',
-        err
-      );
       setBanner({
         msg:
           'Error sending your request. Please try again or WhatsApp us directly.',
@@ -1446,7 +1436,7 @@ export default function AmourAppointmentBooking() {
         ))}
       </div>
       <div className="ae-card">
-        {/* Firebase invisible reCAPTCHA */}
+        {/* Firebase invisible reCAPTCHA — fully hidden via CSS above */}
         <div id="recaptcha-container" />
         {/* Banner */}
         {banner && (
@@ -1575,10 +1565,7 @@ export default function AmourAppointmentBooking() {
                       try {
                         recaptchaRef.current.clear();
                       } catch (e) {
-                        console.warn(
-                          'reCAPTCHA reset:',
-                          e
-                        );
+                        // silent
                       }
                       recaptchaRef.current =
                         null;
