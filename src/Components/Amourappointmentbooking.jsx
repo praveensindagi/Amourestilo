@@ -3,12 +3,10 @@
  * ─────────────────────────────────────────────────────────────────────
  * Luxury appointment booking — Amour Estilo · On-Demand Home Service
  *
- * Firebase Phone OTP Authentication — redesigned sign-in flow:
- * phone verification is now a focused, standalone screen (like a
- * modern OTP login) that happens BEFORE any other form fields are
- * shown. Once verified, the rest of the booking form progressively
- * reveals. This removes friction and clarifies exactly what's being
- * asked at each moment.
+ * Firebase Phone OTP Authentication — OTP verification now happens at
+ * the END of the flow (Review & Confirm step), right before the
+ * appointment is submitted. Contact details are collected up front
+ * with no verification gate, so the booking starts immediately.
  *
  * REQUIRED:
  *   npm install firebase @emailjs/browser react-phone-number-input react-datepicker
@@ -105,59 +103,29 @@ const CSS = `
 .ae-ph-box{border:1px solid var(--g300);border-radius:var(--r);padding:13px 14px;display:flex;align-items:center;gap:8px;transition:border-color var(--t)}
 .ae-ph-box:focus-within{border-color:var(--bk)}
 .ae-ph-box.e{border-color:var(--red)}
-.PhoneInputInput{font-family:var(--sans)!important;font-size:15px!important;font-weight:300!important;color:var(--bk)!important;background:transparent!important;border:none!important;outline:none!important;padding:0!important;width:100%}
-
-/* ── Sign-in screen (redesigned) ─────────────────────────────────── */
-.ae-signin{
-  width:100%;max-width:420px;margin:0 auto;text-align:center;
-  animation:ae-fi .4s ease
-}
-.ae-signin-ic{
-  width:56px;height:56px;border-radius:50%;border:1px solid var(--bk);
-  display:flex;align-items:center;justify-content:center;margin:0 auto 22px;
-  transition:transform .3s ease
-}
-.ae-signin-ic svg{width:22px;height:22px}
-.ae-signin-t{font-family:var(--serif);font-size:24px;font-weight:300;letter-spacing:1px;color:var(--bk);margin-bottom:8px}
-.ae-signin-s{font-size:11px;font-weight:300;color:var(--g500);letter-spacing:.3px;line-height:1.6;margin-bottom:32px}
-.ae-signin-f{margin-bottom:14px;text-align:left}
-.ae-signin-ph .ae-ph-box{padding:15px 16px}
-.ae-signin-btn{
-  width:100%;padding:16px;font-family:var(--sans);font-size:10px;font-weight:500;
-  letter-spacing:4px;text-transform:uppercase;background:var(--bk);color:var(--wh);
-  border:none;border-radius:var(--r);cursor:pointer;display:flex;align-items:center;
-  justify-content:center;gap:10px;margin-top:18px;transition:background .3s,letter-spacing .3s
-}
-.ae-signin-btn:hover:not(:disabled){background:var(--g900);letter-spacing:5px}
-.ae-signin-btn:disabled{background:var(--g300);cursor:not-allowed}
-.ae-signin-priv{font-size:9px;font-weight:300;color:var(--g500);margin-top:18px;line-height:1.7;letter-spacing:.2px}
-
-/* OTP step within sign-in screen */
-.ae-otp-title{font-size:11px;font-weight:300;color:var(--g700);line-height:1.7;margin-bottom:4px}
-.ae-otp-phone{font-weight:500;color:var(--bk)}
-.ae-otp-edit{font-size:9px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--g500);background:none;border:none;text-decoration:underline;text-underline-offset:3px;cursor:pointer;margin-bottom:26px;padding:0}
-.ae-otp-edit:hover{color:var(--bk)}
-.ae-digits{display:flex;gap:9px;justify-content:center;margin:0 0 8px}
-.ae-dig{width:46px;height:56px;text-align:center;font-family:var(--sans);font-size:22px;font-weight:400;color:var(--bk);background:var(--wh);border:1px solid var(--g300);border-radius:var(--r);outline:none;transition:border-color var(--t),transform .15s;caret-color:var(--bk)}
-.ae-dig:focus{border-color:var(--bk);transform:translateY(-2px)}
-.ae-dig.e{border-color:var(--red)}
-.ae-dig.fl{border-color:var(--g700)}
-.ae-otp-meta{display:flex;align-items:center;justify-content:center;margin-top:16px;gap:14px}
-.ae-resend{font-size:10px;font-weight:400;color:var(--g500);cursor:pointer;background:none;border:none;padding:0;text-decoration:underline;text-underline-offset:3px;transition:color var(--t)}
-.ae-resend:hover{color:var(--bk)}
-.ae-resend:disabled{color:var(--g300);cursor:default;text-decoration:none}
-.ae-verifying{display:flex;align-items:center;justify-content:center;gap:8px;font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--g500);margin-top:18px}
-.ae-ok{display:inline-flex;align-items:center;gap:7px;font-size:9px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--grn)}
-.ae-ok-ic{width:16px;height:16px;border:1px solid var(--grn);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px}
-.ae-ok-big{display:flex;flex-direction:column;align-items:center;gap:14px;padding:6px 0 4px;animation:ae-up .4s ease}
-.ae-ok-circle{width:56px;height:56px;border-radius:50%;background:var(--grn);display:flex;align-items:center;justify-content:center;color:var(--wh);font-size:22px}
-.ae-ok-txt{font-family:var(--serif);font-size:18px;font-weight:300;letter-spacing:1px;color:var(--bk)}
-.ae-ok-sub{font-size:10px;font-weight:400;letter-spacing:1px;color:var(--g500);text-transform:uppercase}
-
+.PhoneInputInput{font-family:var(--sans)!important;font-size:13px!important;font-weight:300!important;color:var(--bk)!important;background:transparent!important;border:none!important;outline:none!important;padding:0!important;width:100%}
 .ae-btn-sms{font-family:var(--sans);font-size:10px;font-weight:500;letter-spacing:2px;text-transform:uppercase;background:var(--bk);color:var(--wh);border:1px solid var(--bk);border-radius:var(--r);padding:12px 18px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:8px;transition:background var(--t),letter-spacing .3s}
 .ae-btn-sms:hover:not(:disabled){background:var(--g900);letter-spacing:2.8px}
 .ae-btn-sms:disabled{background:var(--g300);border-color:var(--g300);cursor:not-allowed}
-.ae-er{font-size:10px;font-weight:400;color:var(--red);letter-spacing:.3px;margin-top:9px;text-align:center}
+.ae-wa-hint{background:#f5f3f0;border:1px solid var(--g300);border-radius:var(--r);padding:14px 16px;margin-top:14px}
+.ae-wa-hint-top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.ae-wa-ic{font-size:16px;line-height:1}
+.ae-wa-hint-title{font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--g700)}
+.ae-wa-hint-body{font-size:11px;font-weight:300;color:var(--g700);line-height:1.7}
+.ae-otp-row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end}
+.ae-otp-hint{font-size:11px;font-weight:300;color:var(--g700);margin-top:8px;line-height:1.6}
+.ae-digits{display:flex;gap:8px;margin-top:14px}
+.ae-dig{width:46px;height:54px;text-align:center;font-family:var(--sans);font-size:20px;font-weight:300;color:var(--bk);background:var(--wh);border:1px solid var(--g300);border-radius:var(--r);outline:none;transition:border-color var(--t);caret-color:var(--bk)}
+.ae-dig:focus{border-color:var(--bk)}
+.ae-dig.e{border-color:var(--red)}
+.ae-dig.fl{border-color:var(--g700)}
+.ae-otp-meta{display:flex;align-items:center;justify-content:space-between;margin-top:12px;flex-wrap:wrap;gap:8px}
+.ae-resend{font-size:10px;font-weight:400;color:var(--g500);cursor:pointer;background:none;border:none;padding:0;text-decoration:underline;text-underline-offset:3px;transition:color var(--t)}
+.ae-resend:hover{color:var(--bk)}
+.ae-resend:disabled{color:var(--g300);cursor:default;text-decoration:none}
+.ae-ok{display:inline-flex;align-items:center;gap:7px;font-size:9px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--grn);margin-top:14px}
+.ae-ok-ic{width:16px;height:16px;border:1px solid var(--grn);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px}
+.ae-er{font-size:10px;font-weight:400;color:var(--red);letter-spacing:.3px;margin-top:5px}
 .ae-btn{font-family:var(--sans);font-size:10px;font-weight:500;letter-spacing:2.5px;text-transform:uppercase;background:var(--bk);color:var(--wh);border:1px solid var(--bk);border-radius:var(--r);padding:12px 20px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:8px;transition:background var(--t),letter-spacing .3s}
 .ae-btn:hover:not(:disabled){background:var(--g900);letter-spacing:3px}
 .ae-btn:disabled{background:var(--g300);border-color:var(--g300);cursor:not-allowed}
@@ -193,7 +161,7 @@ const CSS = `
 .ae-banner.info{background:#f7f4ee;border-color:var(--acc);color:var(--g700)}
 .ae-banner.err{background:#fdf4f3;border-color:var(--red);color:var(--red)}
 @keyframes ae-fi{from{opacity:0}to{opacity:1}}
-@keyframes ae-up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes ae-up{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
 .ae-ov{position:fixed;inset:0;background:rgba(10,10,10,.86);display:flex;align-items:center;justify-content:center;z-index:9999;animation:ae-fi .4s ease;padding:24px}
 .ae-mo{background:var(--wh);max-width:450px;width:100%;padding:50px 40px 42px;border-radius:var(--r);text-align:center;animation:ae-up .5s ease}
 .ae-mo-ic{width:54px;height:54px;border:1px solid var(--bk);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 26px;font-family:var(--serif);font-size:20px;color:var(--bk)}
@@ -211,8 +179,10 @@ const CSS = `
 @media(max-width:580px){
   .ae-card{padding:32px 18px 56px}
   .ae-2{grid-template-columns:1fr}
-  .ae-digits{gap:7px}
-  .ae-dig{width:42px;height:52px;font-size:19px}
+  .ae-otp-row{grid-template-columns:1fr}
+  .ae-otp-row .ae-btn-sms{width:100%;justify-content:center}
+  .ae-digits{gap:6px}
+  .ae-dig{width:40px;height:48px;font-size:18px}
   .ae-mo{padding:38px 22px 34px}
   .ae-mo-acts{flex-direction:column}
   .ae-mo-btn{width:100%;justify-content:center}
@@ -226,7 +196,7 @@ export default function AmourAppointmentBooking() {
     preferredTime: '', address: '', specialNotes: '', agreeTerms: false,
   });
   const [errors, setErrors] = useState({});
-  const [step, setStep] = useState(1); // 1 = sign in, 2 = contact, 3 = service, 4 = confirm
+  const [step, setStep] = useState(1); // 1 = Contact, 2 = Service & Schedule, 3 = Review + OTP + Confirm
 
   // Firebase OTP state
   const [otpSent, setOtpSent] = useState(false);
@@ -235,7 +205,6 @@ export default function AmourAppointmentBooking() {
   const [otpErr, setOtpErr] = useState('');
   const [resend, setResend] = useState(0);
   const [otpSending, setOtpSending] = useState(false);
-  const [verifying, setVerifying] = useState(false);
 
   const confirmationResultRef = useRef(null);
   const recaptchaRef = useRef(null);
@@ -276,6 +245,7 @@ export default function AmourAppointmentBooking() {
     setErrors(p => ({ ...p, [k]: '' }));
   }, []);
 
+  // ── Firebase reCAPTCHA setup (invisible, silent) ──────────────────
   const setupRecaptcha = () => {
     if (recaptchaRef.current) return recaptchaRef.current;
     const container = document.getElementById('recaptcha-container');
@@ -294,6 +264,7 @@ export default function AmourAppointmentBooking() {
     return verifier;
   };
 
+  // ── OTP digit handlers ────────────────────────────────────────────
   const onDigit = (i, val) => {
     if (!/^\d?$/.test(val)) return;
     const next = [...digits];
@@ -320,6 +291,7 @@ export default function AmourAppointmentBooking() {
     if (txt.length === 6) setTimeout(() => doVerify(txt), 100);
   };
 
+  // ── Send OTP using Firebase ───────────────────────────────────────
   const sendOtpViaSMS = async () => {
     if (!form.phone || !isValidPhoneNumber(form.phone)) {
       setErrors(p => ({ ...p, phone: 'Enter a valid mobile number to receive the OTP.' }));
@@ -336,15 +308,17 @@ export default function AmourAppointmentBooking() {
       setOtpVerified(false);
       setDigits(['', '', '', '', '', '']);
       setResend(60);
+      setBanner({ msg: `OTP sent to ${form.phone}. Enter the 6-digit code below.`, type: 'info' });
       setTimeout(() => digitRefs.current[0]?.focus(), 100);
     } catch (err) {
       let message = 'Unable to send OTP. Please check the phone number and try again.';
       if (err?.code === 'auth/invalid-phone-number') message = 'The phone number is invalid. Please check the number and try again.';
-      if (err?.code === 'auth/operation-not-allowed') message = 'Phone authentication is not enabled. Please try again shortly.';
-      if (err?.code === 'auth/unauthorized-domain') message = 'This site isn\u2019t authorized for phone sign-in yet.';
+      if (err?.code === 'auth/operation-not-allowed') message = 'Phone authentication is not enabled in Firebase. Please enable the Phone provider.';
+      if (err?.code === 'auth/unauthorized-domain') message = 'This website domain is not authorized in Firebase Authentication.';
       if (err?.code === 'auth/invalid-app-credential') message = 'Verification failed. Please refresh the page and try again.';
-      if (err?.code === 'auth/quota-exceeded') message = 'SMS limit reached. Please try again later.';
+      if (err?.code === 'auth/quota-exceeded') message = 'SMS quota has been exceeded. Please use the configured Firebase test number during development.';
       setOtpErr(message);
+      setBanner({ msg: 'OTP could not be sent. Please check the Firebase configuration.', type: 'err' });
       if (recaptchaRef.current) {
         try { recaptchaRef.current.clear(); } catch (e) {}
         recaptchaRef.current = null;
@@ -354,21 +328,17 @@ export default function AmourAppointmentBooking() {
     }
   };
 
+  // ── Verify Firebase OTP ───────────────────────────────────────────
   const doVerify = async code => {
     if (!confirmationResultRef.current) { setOtpErr('Please request a new OTP first.'); return; }
     if (!/^\d{6}$/.test(code)) { setOtpErr('Please enter the complete 6-digit OTP.'); return; }
     setOtpErr('');
-    setVerifying(true);
     try {
       await confirmationResultRef.current.confirm(code);
       setOtpVerified(true);
       setOtpErr('');
       setErrors(p => ({ ...p, otp: '' }));
-      // Auto-advance to the rest of the form shortly after showing success
-      setTimeout(() => {
-        setStep(2);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }, 900);
+      setBanner({ msg: 'Identity verified successfully.', type: 'info' });
     } catch (err) {
       let message = 'Incorrect OTP. Please check the code and try again.';
       if (err?.code === 'auth/invalid-verification-code') message = 'Incorrect OTP. Please check the 6-digit code and try again.';
@@ -376,16 +346,17 @@ export default function AmourAppointmentBooking() {
       setOtpErr(message);
       setDigits(['', '', '', '', '', '']);
       setTimeout(() => digitRefs.current[0]?.focus(), 50);
-    } finally {
-      setVerifying(false);
     }
   };
 
-  const editPhone = () => {
+  // Phone changed after being verified earlier in the flow — invalidate it.
+  const onPhoneChange = v => {
+    upd('phone', v || '');
     setOtpSent(false);
     setOtpVerified(false);
     setDigits(['', '', '', '', '', '']);
     setOtpErr('');
+    setBanner(null);
     confirmationResultRef.current = null;
     if (recaptchaRef.current) {
       try { recaptchaRef.current.clear(); } catch (e) {}
@@ -393,13 +364,15 @@ export default function AmourAppointmentBooking() {
     }
   };
 
-  const val2 = () => {
+  // ── Validation ────────────────────────────────────────────────────
+  const val1 = () => {
     const e = {};
     if (!form.fullName.trim()) e.fullName = 'Full name is required.';
     if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'A valid email is required.';
+    if (!form.phone || !isValidPhoneNumber(form.phone)) e.phone = 'A valid phone number is required.';
     return e;
   };
-  const val3 = () => {
+  const val2 = () => {
     const e = {};
     if (!form.service) e.service = 'Please select a service.';
     if (!form.preferredDate) e.preferredDate = 'Please select a date.';
@@ -407,13 +380,14 @@ export default function AmourAppointmentBooking() {
     if (!form.address.trim()) e.address = 'Home address is required.';
     return e;
   };
-  const val4 = () => {
+  const val3 = () => {
     const e = {};
+    if (!otpVerified) e.otp = 'Please verify your phone via SMS OTP before confirming.';
     if (!form.agreeTerms) e.agreeTerms = 'Please agree to the Terms & Privacy Policy.';
     return e;
   };
   const goNext = () => {
-    const e = step === 2 ? val2() : step === 3 ? val3() : {};
+    const e = step === 1 ? val1() : step === 2 ? val2() : {};
     if (Object.keys(e).length) {
       setErrors(e);
       document.getElementById(`f-${Object.keys(e)[0]}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -425,9 +399,14 @@ export default function AmourAppointmentBooking() {
   };
   const goPrev = () => { setStep(s => s - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); };
 
+  // ── Submit ────────────────────────────────────────────────────────
   const submit = async () => {
-    const e = val4();
-    if (Object.keys(e).length) { setErrors(e); return; }
+    const e = val3();
+    if (Object.keys(e).length) {
+      setErrors(e);
+      document.getElementById(`f-${Object.keys(e)[0]}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
     setSubmitting(true);
     setBanner(null);
     const hDate = fmtHuman(form.preferredDate);
@@ -452,6 +431,7 @@ export default function AmourAppointmentBooking() {
     }
   };
 
+  // ── Action URLs ───────────────────────────────────────────────────
   const waUrl = () => {
     if (!success) return '#';
     const m = `Hello Amour Estilo! Confirming my booking:\n📌 ${success.service}\n📅 ${success.date} at ${success.time}\n📍 ${success.address}\nName: ${success.name}`;
@@ -462,9 +442,11 @@ export default function AmourAppointmentBooking() {
     return `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('Amour Estilo — ' + success.service)}&dates=${success.gcalDate}/${success.gcalDate}&details=${encodeURIComponent(`Service: ${success.service}\nTime: ${success.time}`)}&location=${encodeURIComponent(success.address)}`;
   };
 
-  const STEP_LABELS = ['Sign In', 'Contact', 'Service', 'Confirm'];
+  // ── Step helpers ──────────────────────────────────────────────────
+  const STEP_LABELS = ['Contact', 'Service', 'Confirm'];
   const ss = i => (i + 1 < step ? 'dn' : i + 1 === step ? 'act' : '');
 
+  // ── Render ────────────────────────────────────────────────────────
   return (
     <div className="ae">
       <div className="ae-hd">
@@ -491,116 +473,13 @@ export default function AmourAppointmentBooking() {
         <div id="recaptcha-container" />
         {banner && <div className={`ae-banner ${banner.type}`}>{banner.msg}</div>}
 
-        {/* ══════════════════ STEP 1 — Sign in with phone (OTP) ══════════════════ */}
+        {/* ══════════════════════════════ STEP 1 — Contact Details (no OTP) ══════════════════════════════ */}
         {step === 1 && (
-          <div className="ae-signin">
-            {!otpSent && !otpVerified && (
-              <>
-                <div className="ae-signin-ic">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4">
-                    <rect x="7" y="2" width="10" height="20" rx="2" />
-                    <path d="M11 18h2" strokeLinecap="round" />
-                  </svg>
-                </div>
-                <div className="ae-signin-t">Sign In to Book</div>
-                <div className="ae-signin-s">
-                  Enter your mobile number and we'll text you a one-time code — no password needed.
-                </div>
-                <div className="ae-signin-f ae-signin-ph" id="f-phone">
-                  <label className="ae-lbl">Mobile Number</label>
-                  <div className={`ae-ph-box${errors.phone ? ' e' : ''}`}>
-                    <PhoneInput
-                      international
-                      defaultCountry="IN"
-                      value={form.phone}
-                      onChange={v => { upd('phone', v || ''); editPhone(); }}
-                      placeholder="Mobile number"
-                      autoFocus
-                    />
-                  </div>
-                  {errors.phone && <div className="ae-er" style={{ textAlign: 'left' }}>{errors.phone}</div>}
-                </div>
-                <button
-                  type="button"
-                  className="ae-signin-btn"
-                  onClick={sendOtpViaSMS}
-                  disabled={otpSending || !form.phone}
-                >
-                  {otpSending ? (<><span className="ae-spin" />Sending Code</>) : 'Send Verification Code'}
-                </button>
-                {otpErr && <div className="ae-er">{otpErr}</div>}
-                <div className="ae-signin-priv">
-                  By continuing you agree to receive an SMS verification code. Standard rates may apply.
-                </div>
-              </>
-            )}
-
-            {otpSent && !otpVerified && (
-              <>
-                <div className="ae-signin-ic">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4">
-                    <path d="M4 4h16v14H7l-3 3V4z" strokeLinejoin="round" />
-                  </svg>
-                </div>
-                <div className="ae-signin-t">Enter Code</div>
-                <div className="ae-otp-title">
-                  We sent a 6-digit code to <span className="ae-otp-phone">{form.phone}</span>
-                </div>
-                <button type="button" className="ae-otp-edit" onClick={editPhone}>
-                  Wrong number? Edit
-                </button>
-                <div className="ae-digits" onPaste={onPaste}>
-                  {digits.map((d, i) => (
-                    <input
-                      key={i}
-                      ref={el => (digitRefs.current[i] = el)}
-                      className={`ae-dig${otpErr ? ' e' : ''}${d ? ' fl' : ''}`}
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={1}
-                      value={d}
-                      onChange={e => onDigit(i, e.target.value)}
-                      onKeyDown={e => onKey(i, e)}
-                      aria-label={`OTP digit ${i + 1}`}
-                      disabled={verifying}
-                    />
-                  ))}
-                </div>
-                {otpErr && <div className="ae-er">{otpErr}</div>}
-                {verifying && (
-                  <div className="ae-verifying"><span className="ae-spin" style={{ borderTopColor: 'var(--bk)', borderColor: 'rgba(10,10,10,.2)' }} />Verifying</div>
-                )}
-                <div className="ae-otp-meta">
-                  <button type="button" className="ae-resend" disabled={resend > 0 || otpSending} onClick={sendOtpViaSMS}>
-                    {resend > 0 ? `Resend code in ${resend}s` : 'Resend code'}
-                  </button>
-                </div>
-              </>
-            )}
-
-            {otpVerified && (
-              <div className="ae-ok-big">
-                <div className="ae-ok-circle">✓</div>
-                <div className="ae-ok-txt">Phone Verified</div>
-                <div className="ae-ok-sub">Continuing…</div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ══════════════════ STEP 2 — Contact details ══════════════════ */}
-        {step === 2 && (
           <>
             <div className="ae-sh">
               <span className="ae-si">I</span>
               <span className="ae-st">Contact Details</span>
               <div className="ae-sline" />
-            </div>
-            <div className="ae-f" style={{ marginBottom: 26 }}>
-              <div className="ae-ok" style={{ marginTop: 0 }}>
-                <div className="ae-ok-ic">✓</div>
-                Verified · {form.phone}
-              </div>
             </div>
             <div className="ae-2">
               <div className="ae-f" id="f-fullName">
@@ -611,9 +490,8 @@ export default function AmourAppointmentBooking() {
                   value={form.fullName}
                   placeholder="Your full name"
                   onChange={e => upd('fullName', e.target.value)}
-                  autoFocus
                 />
-                {errors.fullName && <div className="ae-er" style={{ textAlign: 'left' }}>{errors.fullName}</div>}
+                {errors.fullName && <div className="ae-er">{errors.fullName}</div>}
               </div>
               <div className="ae-f" id="f-email">
                 <label className="ae-lbl">Email Address</label>
@@ -624,15 +502,37 @@ export default function AmourAppointmentBooking() {
                   placeholder="your@email.com"
                   onChange={e => upd('email', e.target.value)}
                 />
-                {errors.email && <div className="ae-er" style={{ textAlign: 'left' }}>{errors.email}</div>}
+                {errors.email && <div className="ae-er">{errors.email}</div>}
+              </div>
+            </div>
+            <div className="ae-f" id="f-phone">
+              <label className="ae-lbl">Phone Number</label>
+              <div className={`ae-ph-box${errors.phone ? ' e' : ''}`}>
+                <PhoneInput
+                  international
+                  defaultCountry="IN"
+                  value={form.phone}
+                  onChange={onPhoneChange}
+                  placeholder="Mobile number"
+                />
+              </div>
+              {errors.phone && <div className="ae-er">{errors.phone}</div>}
+              <div className="ae-wa-hint" style={{ marginTop: 12 }}>
+                <div className="ae-wa-hint-top">
+                  <span className="ae-wa-ic">📱</span>
+                  <span className="ae-wa-hint-title">Verified at Checkout</span>
+                </div>
+                <div className="ae-wa-hint-body">
+                  We'll send a one-time SMS code to this number at the final step to confirm your booking.
+                </div>
               </div>
             </div>
             <button type="button" className="ae-sub-btn" onClick={goNext}>Continue — Service Details →</button>
           </>
         )}
 
-        {/* ══════════════════ STEP 3 — Service & schedule ══════════════════ */}
-        {step === 3 && (
+        {/* ══════════════════════════════ STEP 2 — Service & Schedule ══════════════════════════════ */}
+        {step === 2 && (
           <>
             <div className="ae-sh">
               <span className="ae-si">II</span>
@@ -648,7 +548,7 @@ export default function AmourAppointmentBooking() {
                 </select>
                 <span className="ae-sa">▾</span>
               </div>
-              {errors.service && <div className="ae-er" style={{ textAlign: 'left' }}>{errors.service}</div>}
+              {errors.service && <div className="ae-er">{errors.service}</div>}
             </div>
             <div className="ae-2">
               <div className="ae-f" id="f-preferredDate">
@@ -663,7 +563,7 @@ export default function AmourAppointmentBooking() {
                     customInput={<input className={`ae-in${errors.preferredDate ? ' e' : ''}`} style={{ cursor: 'pointer' }} readOnly />}
                   />
                 </div>
-                {errors.preferredDate && <div className="ae-er" style={{ textAlign: 'left' }}>{errors.preferredDate}</div>}
+                {errors.preferredDate && <div className="ae-er">{errors.preferredDate}</div>}
               </div>
               <div className="ae-f" id="f-preferredTime">
                 <label className="ae-lbl">Preferred Time</label>
@@ -674,7 +574,7 @@ export default function AmourAppointmentBooking() {
                   </select>
                   <span className="ae-sa">▾</span>
                 </div>
-                {errors.preferredTime && <div className="ae-er" style={{ textAlign: 'left' }}>{errors.preferredTime}</div>}
+                {errors.preferredTime && <div className="ae-er">{errors.preferredTime}</div>}
               </div>
             </div>
             <div className="ae-sep" />
@@ -686,7 +586,7 @@ export default function AmourAppointmentBooking() {
             <div className="ae-f" id="f-address">
               <label className="ae-lbl">Home Address</label>
               <textarea className={`ae-ta${errors.address ? ' e' : ''}`} value={form.address} rows={3} placeholder="Building, street, area, city, pincode" onChange={e => upd('address', e.target.value)} />
-              {errors.address && <div className="ae-er" style={{ textAlign: 'left' }}>{errors.address}</div>}
+              {errors.address && <div className="ae-er">{errors.address}</div>}
             </div>
             <div className="ae-f">
               <label className="ae-lbl">Special Notes <span className="ae-opt">(Optional)</span></label>
@@ -699,8 +599,8 @@ export default function AmourAppointmentBooking() {
           </>
         )}
 
-        {/* ══════════════════ STEP 4 — Review & confirm ══════════════════ */}
-        {step === 4 && (
+        {/* ══════════════════════════════ STEP 3 — Review, Verify (OTP), Confirm ══════════════════════════════ */}
+        {step === 3 && (
           <>
             <div className="ae-sh">
               <span className="ae-si">IV</span>
@@ -720,6 +620,87 @@ export default function AmourAppointmentBooking() {
                 </div>
               ))}
             </div>
+
+            <div className="ae-sep" />
+            <div className="ae-sh">
+              <span className="ae-si">V</span>
+              <span className="ae-st">Verify Your Phone</span>
+              <div className="ae-sline" />
+            </div>
+            <div className="ae-f" id="f-otp">
+              <label className="ae-lbl">SMS OTP</label>
+              <div className="ae-otp-row">
+                <div className="ae-ph-box" style={{ pointerEvents: 'none', opacity: 0.7 }}>
+                  <span style={{ fontSize: 13, fontWeight: 300, color: 'var(--g500)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {form.phone}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  className="ae-btn-sms"
+                  onClick={sendOtpViaSMS}
+                  disabled={otpSending || otpVerified || !form.phone}
+                >
+                  {otpSending ? (<><span className="ae-spin" />Sending</>) : (
+                    <>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1.9-2 2-2zm0 14H6l-2 2V4h16v12z" />
+                      </svg>
+                      {otpSent ? 'Resend' : 'Send OTP'}
+                    </>
+                  )}
+                </button>
+              </div>
+              {!otpSent && !otpVerified && (
+                <div className="ae-wa-hint">
+                  <div className="ae-wa-hint-top">
+                    <span className="ae-wa-ic">📱</span>
+                    <span className="ae-wa-hint-title">Final Step — Secure Verification</span>
+                  </div>
+                  <div className="ae-wa-hint-body">
+                    Tap <strong>Send OTP</strong> to receive a secure 6-digit code by SMS. Enter it below, then confirm your appointment.
+                  </div>
+                </div>
+              )}
+              {otpSent && !otpVerified && (
+                <>
+                  <p className="ae-otp-hint">
+                    Enter the 6-digit code sent via SMS to <strong>{form.phone}</strong>
+                  </p>
+                  <div className="ae-digits" onPaste={onPaste}>
+                    {digits.map((d, i) => (
+                      <input
+                        key={i}
+                        ref={el => (digitRefs.current[i] = el)}
+                        className={`ae-dig${otpErr ? ' e' : ''}${d ? ' fl' : ''}`}
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={1}
+                        value={d}
+                        onChange={e => onDigit(i, e.target.value)}
+                        onKeyDown={e => onKey(i, e)}
+                        aria-label={`OTP digit ${i + 1}`}
+                      />
+                    ))}
+                  </div>
+                  <div className="ae-otp-meta">
+                    {otpErr ? <div className="ae-er" style={{ marginTop: 0 }}>{otpErr}</div> : <div />}
+                    <button type="button" className="ae-resend" disabled={resend > 0 || otpSending} onClick={sendOtpViaSMS}>
+                      {resend > 0 ? `Resend in ${resend}s` : 'Resend code'}
+                    </button>
+                  </div>
+                </>
+              )}
+              {otpVerified && (
+                <div className="ae-ok">
+                  <div className="ae-ok-ic">✓</div>
+                  Identity Verified
+                </div>
+              )}
+              {errors.otp && !otpVerified && <div className="ae-er">{errors.otp}</div>}
+            </div>
+
+            <div className="ae-sep" />
             <div className="ae-f" id="f-agreeTerms">
               <div className="ae-cr">
                 <input id="ae-tc" type="checkbox" className="ae-cb" checked={form.agreeTerms} onChange={e => upd('agreeTerms', e.target.checked)} />
@@ -727,7 +708,7 @@ export default function AmourAppointmentBooking() {
                   I agree to Amour Estilo's <a href="#terms" className="ae-link">Terms of Service</a> and <a href="#privacy" className="ae-link">Privacy Policy</a>. I understand my booking is subject to availability confirmation.
                 </label>
               </div>
-              {errors.agreeTerms && <div className="ae-er" style={{ marginTop: 8, textAlign: 'left' }}>{errors.agreeTerms}</div>}
+              {errors.agreeTerms && <div className="ae-er" style={{ marginTop: 8 }}>{errors.agreeTerms}</div>}
             </div>
             <div style={{ display: 'flex', gap: 12 }}>
               <button type="button" className="ae-btn ae-btn-ol" style={{ flex: '0 0 auto', padding: '15px 20px' }} onClick={goPrev}>← Edit</button>
