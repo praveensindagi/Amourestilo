@@ -27,7 +27,7 @@ import { db } from './firebase';
 import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
 import DatePicker from 'react-datepicker';
 // ── CONFIG ───────────────────────────────────────────────────────────
-const WHATSAPP_NUMBER = '919999999999';
+const WHATSAPP_NUMBER = '919187461258';
 // ── Pricing ──────────────────────────────────────────────────────────
 const BOOKING_FEE_STANDARD = 19999;
 const BOOKING_FEE_MEMBER = 14999;
@@ -162,13 +162,20 @@ html,body{overflow-x:hidden;max-width:100%}
 @keyframes ae-up{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 .ae-ov{position:fixed;inset:0;background:rgba(10,10,10,.86);display:flex;align-items:center;justify-content:center;z-index:9999;animation:ae-fi .4s ease;padding:20px}
 .ae-mo{background:var(--wh);max-width:440px;width:100%;padding:44px 30px 36px;border-radius:2px;text-align:center;animation:ae-up .5s ease;max-height:90vh;overflow-y:auto}
+.ae-mo.gold{background:linear-gradient(160deg,#fffdf6 0%,var(--g50) 60%,#fbf3dd 100%);border:1px solid var(--gold2);box-shadow:0 10px 40px rgba(212,175,55,.28)}
 .ae-mo-t{font-family:var(--serif);font-size:21px;font-weight:300;letter-spacing:2px;text-transform:uppercase;color:var(--bk);margin-bottom:10px}
+.ae-mo-t.gold{color:var(--gold1)}
+.ae-mo-crown-lg{font-size:30px;color:var(--gold2);margin-bottom:6px;line-height:1}
 .ae-mo-b{font-size:12px;font-weight:300;color:var(--g700);line-height:1.9;margin-bottom:20px}
 .ae-mo-tl{font-family:var(--serif);font-style:italic;font-size:14px;font-weight:300;color:var(--g500);margin-bottom:26px;letter-spacing:1px}
+.ae-mo-tl.gold{color:var(--gold1)}
 .ae-mo-acts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
 .ae-mo-btn{font-family:var(--sans);font-size:9px;font-weight:500;letter-spacing:2px;text-transform:uppercase;padding:12px 18px;border:1px solid var(--bk);border-radius:var(--r);background:transparent;color:var(--bk);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:background var(--t),color var(--t)}
 .ae-mo-btn:hover{background:var(--bk);color:var(--wh)}
+.ae-mo-btn.gold{border-color:var(--gold1);color:var(--gold1)}
+.ae-mo-btn.gold:hover{background:linear-gradient(120deg,var(--gold1),var(--gold2));color:var(--gold-ink);border-color:var(--gold1)}
 .ae-mo-ft{font-size:9px;font-weight:400;letter-spacing:3px;color:var(--g300);text-transform:uppercase;margin-top:26px}
+.ae-mo-ft.gold{color:var(--gold2)}
 .ae-ft{width:100%;border-top:1px solid var(--g100);padding:22px 16px;text-align:center;font-size:9px;font-weight:400;letter-spacing:2px;text-transform:uppercase;color:var(--g300)}
 .ae-congrats-ic{font-size:42px;margin-bottom:8px;line-height:1}
 /* Skin type / concerns panel */
