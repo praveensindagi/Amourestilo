@@ -3,53 +3,66 @@
  * ─────────────────────────────────────────────────────────────────────
  * Luxury appointment booking — Amour Estilo · On-Demand Home Service
  *
- * Firebase Phone OTP Authentication — OTP verification now happens at
- * the END of the flow (Review & Confirm step), right before the
- * appointment is submitted. Contact details are collected up front
- * with no verification gate, so the booking starts immediately.
+ * v3 — No OTP verification. Flow:
+ *   1. Contact Details
+ *   2. Service (with pricing) + Skin Type + Skin Concerns + Schedule +
+ *      Event Location (pincode auto-lookup → state/city, block, street)
+ *   3. Review + Membership + Dummy Razorpay-style Payment → Congratulations
  *
  * REQUIRED:
- *   npm install firebase @emailjs/browser react-phone-number-input react-datepicker
+ *   npm install @emailjs/browser react-phone-number-input react-datepicker
  *
  * ENTRY FILE (index.js / main.jsx):
  *   import 'react-phone-number-input/style.css';
  *   import 'react-datepicker/dist/react-datepicker.css';
  *
- * Firebase:
- *   - Phone Authentication must be enabled
- *   - Firebase test number can be used during development
- *   - Test number: +1 650-555-3434
- *   - Test OTP:    654321
+ * PAYMENT: this uses a DUMMY payment flow (simulated delay + success).
+ * To go live, swap `runDummyPayment()` for a real Razorpay Checkout
+ * call (load checkout.js, create an order server-side, open
+ * `new window.Razorpay(options).open()`, and resolve on the
+ * `handler` callback instead of the setTimeout below).
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import emailjs from '@emailjs/browser';
 import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
 import DatePicker from 'react-datepicker';
-import {
-  RecaptchaVerifier,
-  signInWithPhoneNumber,
-} from 'firebase/auth';
-import { auth } from './firebase';
-// ── CONFIG — replace with your real EmailJS / WhatsApp values ─────────
+// ── CONFIG — replace with your real EmailJS values ─────────────────────
 const EMAILJS_SERVICE_ID = 'YOUR_SERVICE_ID';
 const EMAILJS_ADMIN_TID = 'YOUR_ADMIN_TEMPLATE_ID';
 const EMAILJS_PUBLIC_KEY = 'YOUR_PUBLIC_KEY';
 const ADMIN_EMAIL = 'info.amourestilo@gmail.com';
 const WHATSAPP_NUMBER = '919999999999';
-// ─────────────────────────────────────────────────────────────────────
+// ── Pricing ──────────────────────────────────────────────────────────
+const BOOKING_FEE_STANDARD = 19999;
+const BOOKING_FEE_MEMBER = 14999;
+const MEMBERSHIP_DISCOUNT = 5000;
 const SERVICES = [
-  'Bridal Makeup',
-  'Party & Occasion Makeup',
-  'HD Makeup',
-  'Fashion Shoot Makeup',
-  'Hair Styling',
-  'Nail Services',
-  'Skin Consultation',
+  { name: 'Bridal Makeup', price: 15000 },
+  { name: 'Cocktail Look', price: 9000 },
+  { name: 'Airbrush Makeup', price: 11000 },
+  { name: 'Soft Glam', price: 7000 },
+  { name: 'Party & Occasion', price: 7500 },
+  { name: 'Professional Shoot', price: 12500 },
+];
+const SKIN_TYPES = ['Normal', 'Oily', 'Dry', 'Combination', 'Sensitive'];
+const SKIN_CONCERNS = [
+  'Acne & Breakouts', 'Pigmentation', 'Dark Circles', 'Dryness / Flaking',
+  'Redness / Sensitivity', 'Uneven Tone', 'Fine Lines', 'Large Pores',
+];
+const INDIAN_STATES = [
+  'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa',
+  'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka', 'Kerala',
+  'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland',
+  'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura',
+  'Uttar Pradesh', 'Uttarakhand', 'West Bengal',
+  'Andaman and Nicobar Islands', 'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu',
+  'Delhi', 'Jammu and Kashmir', 'Ladakh', 'Lakshadweep', 'Puducherry',
 ];
 const TIME_SLOTS = [
   '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '1:00 PM',
   '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM', '6:00 PM', '7:00 PM',
 ];
+const inr = n => `₹${Number(n).toLocaleString('en-IN')}`;
 const fmtHuman = d =>
   d ? d.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : '';
 const fmtGCal = d => {
@@ -98,33 +111,13 @@ const CSS = `
 .ae-in.e,.ae-sel.e,.ae-ta.e{border-color:var(--red)}
 .ae-ta{resize:vertical;min-height:84px;line-height:1.7}
 .ae-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.ae-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
 .ae-sw{position:relative}
 .ae-sa{position:absolute;right:13px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--g500);font-size:9px}
 .ae-ph-box{border:1px solid var(--g300);border-radius:var(--r);padding:13px 14px;display:flex;align-items:center;gap:8px;transition:border-color var(--t)}
 .ae-ph-box:focus-within{border-color:var(--bk)}
 .ae-ph-box.e{border-color:var(--red)}
 .PhoneInputInput{font-family:var(--sans)!important;font-size:13px!important;font-weight:300!important;color:var(--bk)!important;background:transparent!important;border:none!important;outline:none!important;padding:0!important;width:100%}
-.ae-btn-sms{font-family:var(--sans);font-size:10px;font-weight:500;letter-spacing:2px;text-transform:uppercase;background:var(--bk);color:var(--wh);border:1px solid var(--bk);border-radius:var(--r);padding:12px 18px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:8px;transition:background var(--t),letter-spacing .3s}
-.ae-btn-sms:hover:not(:disabled){background:var(--g900);letter-spacing:2.8px}
-.ae-btn-sms:disabled{background:var(--g300);border-color:var(--g300);cursor:not-allowed}
-.ae-wa-hint{background:#f5f3f0;border:1px solid var(--g300);border-radius:var(--r);padding:14px 16px;margin-top:14px}
-.ae-wa-hint-top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-.ae-wa-ic{font-size:16px;line-height:1}
-.ae-wa-hint-title{font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--g700)}
-.ae-wa-hint-body{font-size:11px;font-weight:300;color:var(--g700);line-height:1.7}
-.ae-otp-row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end}
-.ae-otp-hint{font-size:11px;font-weight:300;color:var(--g700);margin-top:8px;line-height:1.6}
-.ae-digits{display:flex;gap:8px;margin-top:14px}
-.ae-dig{width:46px;height:54px;text-align:center;font-family:var(--sans);font-size:20px;font-weight:300;color:var(--bk);background:var(--wh);border:1px solid var(--g300);border-radius:var(--r);outline:none;transition:border-color var(--t);caret-color:var(--bk)}
-.ae-dig:focus{border-color:var(--bk)}
-.ae-dig.e{border-color:var(--red)}
-.ae-dig.fl{border-color:var(--g700)}
-.ae-otp-meta{display:flex;align-items:center;justify-content:space-between;margin-top:12px;flex-wrap:wrap;gap:8px}
-.ae-resend{font-size:10px;font-weight:400;color:var(--g500);cursor:pointer;background:none;border:none;padding:0;text-decoration:underline;text-underline-offset:3px;transition:color var(--t)}
-.ae-resend:hover{color:var(--bk)}
-.ae-resend:disabled{color:var(--g300);cursor:default;text-decoration:none}
-.ae-ok{display:inline-flex;align-items:center;gap:7px;font-size:9px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--grn);margin-top:14px}
-.ae-ok-ic{width:16px;height:16px;border:1px solid var(--grn);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px}
 .ae-er{font-size:10px;font-weight:400;color:var(--red);letter-spacing:.3px;margin-top:5px}
 .ae-btn{font-family:var(--sans);font-size:10px;font-weight:500;letter-spacing:2.5px;text-transform:uppercase;background:var(--bk);color:var(--wh);border:1px solid var(--bk);border-radius:var(--r);padding:12px 20px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:8px;transition:background var(--t),letter-spacing .3s}
 .ae-btn:hover:not(:disabled){background:var(--g900);letter-spacing:3px}
@@ -155,7 +148,7 @@ const CSS = `
 .ae-summ{border:1px solid var(--g200);border-radius:var(--r);padding:24px 22px;margin-bottom:26px}
 .ae-summ-row{display:flex;gap:16px;padding-bottom:13px;margin-bottom:13px;border-bottom:.5px solid var(--g100)}
 .ae-summ-row:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
-.ae-summ-k{font-size:9px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--g500);min-width:72px;padding-top:2px;flex-shrink:0}
+.ae-summ-k{font-size:9px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--g500);min-width:100px;padding-top:2px;flex-shrink:0}
 .ae-summ-v{font-size:13px;font-weight:300;color:var(--bk);line-height:1.6}
 .ae-banner{padding:13px 16px;font-size:11px;font-weight:300;letter-spacing:.3px;border-radius:var(--r);border:1px solid;margin-bottom:20px}
 .ae-banner.info{background:#f7f4ee;border-color:var(--acc);color:var(--g700)}
@@ -173,16 +166,37 @@ const CSS = `
 .ae-mo-btn:hover{background:var(--bk);color:var(--wh)}
 .ae-mo-ft{font-size:9px;font-weight:400;letter-spacing:4px;color:var(--g300);text-transform:uppercase;margin-top:30px}
 .ae-ft{width:100%;border-top:1px solid var(--g100);padding:22px;text-align:center;font-size:9px;font-weight:400;letter-spacing:3px;text-transform:uppercase;color:var(--g300)}
-/* Firebase invisible reCAPTCHA — fully hidden, incl. floating badge */
-#recaptcha-container{position:fixed!important;bottom:0;right:0;min-height:0;width:0;height:0;overflow:hidden;opacity:0;pointer-events:none}
-.grecaptcha-badge{visibility:hidden!important;opacity:0!important}
+.ae-congrats-ic{font-size:42px;margin-bottom:8px;line-height:1}
+/* Pills (skin type / concerns) */
+.ae-pills{display:flex;flex-wrap:wrap;gap:8px}
+.ae-pill{padding:9px 16px;border:1px solid var(--g300);border-radius:20px;font-size:11px;font-weight:400;color:var(--g700);cursor:pointer;background:var(--wh);transition:all .2s ease;user-select:none}
+.ae-pill:hover{border-color:var(--g500)}
+.ae-pill.sel{background:var(--bk);border-color:var(--bk);color:var(--wh)}
+/* Service select price */
+.ae-svc-price{color:var(--g500)}
+/* Membership */
+.ae-mem-card{border:1px solid var(--g300);border-radius:var(--r);padding:20px 22px;margin-bottom:22px;transition:border-color .25s,background .25s}
+.ae-mem-card.on{border-color:var(--bk);background:var(--g50)}
+.ae-mem-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.ae-mem-info{flex:1}
+.ae-mem-t{font-family:var(--serif);font-size:17px;font-weight:400;color:var(--bk);margin-bottom:6px}
+.ae-mem-s{font-size:11px;font-weight:300;color:var(--g700);line-height:1.7}
+.ae-switch{position:relative;width:42px;height:24px;flex-shrink:0;margin-top:2px}
+.ae-switch input{opacity:0;width:0;height:0;position:absolute}
+.ae-switch-track{position:absolute;inset:0;background:var(--g300);border-radius:24px;cursor:pointer;transition:background .25s}
+.ae-switch-track::before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:var(--wh);border-radius:50%;transition:transform .25s}
+.ae-switch input:checked + .ae-switch-track{background:var(--bk)}
+.ae-switch input:checked + .ae-switch-track::before{transform:translateX(18px)}
+/* Price breakdown */
+.ae-price-box{border:1px solid var(--g200);border-radius:var(--r);padding:22px;margin-bottom:8px}
+.ae-price-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--g700);padding:6px 0}
+.ae-price-row.total{border-top:1px solid var(--g200);margin-top:8px;padding-top:16px;font-size:16px;font-weight:500;color:var(--bk);font-family:var(--serif)}
+.ae-price-strike{text-decoration:line-through;color:var(--g500);margin-right:8px;font-weight:300}
+.ae-price-save{color:var(--grn);font-size:9px;font-weight:500;text-transform:uppercase;letter-spacing:1px;margin-top:4px;text-align:right}
+.ae-pay-note{font-size:9px;font-weight:300;color:var(--g500);text-align:center;margin-top:14px;letter-spacing:.2px;line-height:1.6}
 @media(max-width:580px){
   .ae-card{padding:32px 18px 56px}
-  .ae-2{grid-template-columns:1fr}
-  .ae-otp-row{grid-template-columns:1fr}
-  .ae-otp-row .ae-btn-sms{width:100%;justify-content:center}
-  .ae-digits{gap:6px}
-  .ae-dig{width:40px;height:48px;font-size:18px}
+  .ae-2,.ae-3{grid-template-columns:1fr}
   .ae-mo{padding:38px 22px 34px}
   .ae-mo-acts{flex-direction:column}
   .ae-mo-btn{width:100%;justify-content:center}
@@ -192,27 +206,21 @@ const CSS = `
 // ── Component ─────────────────────────────────────────────────────────
 export default function AmourAppointmentBooking() {
   const [form, setForm] = useState({
-    fullName: '', email: '', phone: '', service: '', preferredDate: null,
-    preferredTime: '', address: '', specialNotes: '', agreeTerms: false,
+    fullName: '', email: '', phone: '',
+    service: '', skinType: '', skinConcerns: [],
+    preferredDate: null, preferredTime: '',
+    pincode: '', state: '', city: '', locality: '', block: '', street: '',
+    specialNotes: '', agreeTerms: false, isMember: false,
   });
   const [errors, setErrors] = useState({});
-  const [step, setStep] = useState(1); // 1 = Contact, 2 = Service & Schedule, 3 = Review + OTP + Confirm
-
-  // Firebase OTP state
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpVerified, setOtpVerified] = useState(false);
-  const [digits, setDigits] = useState(['', '', '', '', '', '']);
-  const [otpErr, setOtpErr] = useState('');
-  const [resend, setResend] = useState(0);
-  const [otpSending, setOtpSending] = useState(false);
-
-  const confirmationResultRef = useRef(null);
-  const recaptchaRef = useRef(null);
+  const [step, setStep] = useState(1); // 1 = Contact, 2 = Service & Details, 3 = Review & Payment
+  const [localityOptions, setLocalityOptions] = useState([]);
+  const [pincodeStatus, setPincodeStatus] = useState(''); // '', 'loading', 'ok', 'err'
   const [submitting, setSubmitting] = useState(false);
+  const [paying, setPaying] = useState(false);
   const [success, setSuccess] = useState(null);
   const [banner, setBanner] = useState(null);
-  const digitRefs = useRef([]);
-  const timerRef = useRef(null);
+  const pinTimer = useRef(null);
 
   useEffect(() => {
     const existing = document.getElementById('ae-css');
@@ -224,143 +232,49 @@ export default function AmourAppointmentBooking() {
     return () => { const style = document.getElementById('ae-css'); if (style) style.remove(); };
   }, []);
 
-  useEffect(() => {
-    return () => {
-      if (recaptchaRef.current) {
-        try { recaptchaRef.current.clear(); } catch (e) {}
-        recaptchaRef.current = null;
-      }
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (resend <= 0) return;
-    timerRef.current = setTimeout(() => setResend(t => t - 1), 1000);
-    return () => clearTimeout(timerRef.current);
-  }, [resend]);
-
   const upd = useCallback((k, v) => {
     setForm(p => ({ ...p, [k]: v }));
     setErrors(p => ({ ...p, [k]: '' }));
   }, []);
 
-  // ── Firebase reCAPTCHA setup (invisible, silent) ──────────────────
-  const setupRecaptcha = () => {
-    if (recaptchaRef.current) return recaptchaRef.current;
-    const container = document.getElementById('recaptcha-container');
-    if (!container) throw new Error('Firebase reCAPTCHA container not found.');
-    const verifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-      size: 'invisible',
-      callback: () => {},
-      'expired-callback': () => {
-        if (recaptchaRef.current) {
-          try { recaptchaRef.current.clear(); } catch (e) {}
-        }
-        recaptchaRef.current = null;
-      },
-    });
-    recaptchaRef.current = verifier;
-    return verifier;
+  const toggleConcern = c => {
+    setForm(p => ({
+      ...p,
+      skinConcerns: p.skinConcerns.includes(c)
+        ? p.skinConcerns.filter(x => x !== c)
+        : [...p.skinConcerns, c],
+    }));
   };
 
-  // ── OTP digit handlers ────────────────────────────────────────────
-  const onDigit = (i, val) => {
-    if (!/^\d?$/.test(val)) return;
-    const next = [...digits];
-    next[i] = val;
-    setDigits(next);
-    setOtpErr('');
-    if (val && i < 5) digitRefs.current[i + 1]?.focus();
-    if (!val && i > 0) digitRefs.current[i - 1]?.focus();
-    const code = next.join('');
-    if (code.length === 6) setTimeout(() => doVerify(code), 100);
-  };
-  const onKey = (i, e) => {
-    if (e.key === 'Backspace' && !digits[i] && i > 0) digitRefs.current[i - 1]?.focus();
-    if (e.key === 'ArrowLeft' && i > 0) digitRefs.current[i - 1]?.focus();
-    if (e.key === 'ArrowRight' && i < 5) digitRefs.current[i + 1]?.focus();
-  };
-  const onPaste = e => {
-    const txt = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
-    if (!txt) return;
-    e.preventDefault();
-    const arr = [...txt.split(''), '', '', '', '', '', ''].slice(0, 6);
-    setDigits(arr);
-    if (txt.length < 6) digitRefs.current[Math.min(txt.length, 5)]?.focus();
-    if (txt.length === 6) setTimeout(() => doVerify(txt), 100);
-  };
-
-  // ── Send OTP using Firebase ───────────────────────────────────────
-  const sendOtpViaSMS = async () => {
-    if (!form.phone || !isValidPhoneNumber(form.phone)) {
-      setErrors(p => ({ ...p, phone: 'Enter a valid mobile number to receive the OTP.' }));
-      return;
-    }
-    setOtpSending(true);
-    setBanner(null);
-    setOtpErr('');
+  // ── Pincode → State/City auto-lookup ───────────────────────────────
+  const lookupPincode = async pin => {
+    setPincodeStatus('loading');
     try {
-      const appVerifier = setupRecaptcha();
-      const confirmationResult = await signInWithPhoneNumber(auth, form.phone, appVerifier);
-      confirmationResultRef.current = confirmationResult;
-      setOtpSent(true);
-      setOtpVerified(false);
-      setDigits(['', '', '', '', '', '']);
-      setResend(60);
-      setBanner({ msg: `OTP sent to ${form.phone}. Enter the 6-digit code below.`, type: 'info' });
-      setTimeout(() => digitRefs.current[0]?.focus(), 100);
-    } catch (err) {
-      let message = 'Unable to send OTP. Please check the phone number and try again.';
-      if (err?.code === 'auth/invalid-phone-number') message = 'The phone number is invalid. Please check the number and try again.';
-      if (err?.code === 'auth/operation-not-allowed') message = 'Phone authentication is not enabled in Firebase. Please enable the Phone provider.';
-      if (err?.code === 'auth/unauthorized-domain') message = 'This website domain is not authorized in Firebase Authentication.';
-      if (err?.code === 'auth/invalid-app-credential') message = 'Verification failed. Please refresh the page and try again.';
-      if (err?.code === 'auth/quota-exceeded') message = 'SMS quota has been exceeded. Please use the configured Firebase test number during development.';
-      setOtpErr(message);
-      setBanner({ msg: 'OTP could not be sent. Please check the Firebase configuration.', type: 'err' });
-      if (recaptchaRef.current) {
-        try { recaptchaRef.current.clear(); } catch (e) {}
-        recaptchaRef.current = null;
+      const res = await fetch(`https://api.postalpincode.in/pincode/${pin}`);
+      const data = await res.json();
+      if (data && data[0] && data[0].Status === 'Success' && data[0].PostOffice?.length) {
+        const po = data[0].PostOffice[0];
+        setForm(p => ({ ...p, state: po.State || p.state, city: po.District || p.city }));
+        setLocalityOptions([...new Set(data[0].PostOffice.map(o => o.Name))]);
+        setErrors(p => ({ ...p, pincode: '' }));
+        setPincodeStatus('ok');
+      } else {
+        setPincodeStatus('err');
+        setLocalityOptions([]);
       }
-    } finally {
-      setOtpSending(false);
+    } catch (e) {
+      setPincodeStatus('err');
+      setLocalityOptions([]);
     }
   };
 
-  // ── Verify Firebase OTP ───────────────────────────────────────────
-  const doVerify = async code => {
-    if (!confirmationResultRef.current) { setOtpErr('Please request a new OTP first.'); return; }
-    if (!/^\d{6}$/.test(code)) { setOtpErr('Please enter the complete 6-digit OTP.'); return; }
-    setOtpErr('');
-    try {
-      await confirmationResultRef.current.confirm(code);
-      setOtpVerified(true);
-      setOtpErr('');
-      setErrors(p => ({ ...p, otp: '' }));
-      setBanner({ msg: 'Identity verified successfully.', type: 'info' });
-    } catch (err) {
-      let message = 'Incorrect OTP. Please check the code and try again.';
-      if (err?.code === 'auth/invalid-verification-code') message = 'Incorrect OTP. Please check the 6-digit code and try again.';
-      if (err?.code === 'auth/code-expired') message = 'This OTP has expired. Please request a new OTP.';
-      setOtpErr(message);
-      setDigits(['', '', '', '', '', '']);
-      setTimeout(() => digitRefs.current[0]?.focus(), 50);
-    }
-  };
-
-  // Phone changed after being verified earlier in the flow — invalidate it.
-  const onPhoneChange = v => {
-    upd('phone', v || '');
-    setOtpSent(false);
-    setOtpVerified(false);
-    setDigits(['', '', '', '', '', '']);
-    setOtpErr('');
-    setBanner(null);
-    confirmationResultRef.current = null;
-    if (recaptchaRef.current) {
-      try { recaptchaRef.current.clear(); } catch (e) {}
-      recaptchaRef.current = null;
+  const onPincodeChange = v => {
+    const digits = v.replace(/\D/g, '').slice(0, 6);
+    upd('pincode', digits);
+    setPincodeStatus('');
+    if (pinTimer.current) clearTimeout(pinTimer.current);
+    if (digits.length === 6) {
+      pinTimer.current = setTimeout(() => lookupPincode(digits), 400);
     }
   };
 
@@ -375,14 +289,18 @@ export default function AmourAppointmentBooking() {
   const val2 = () => {
     const e = {};
     if (!form.service) e.service = 'Please select a service.';
+    if (!form.skinType) e.skinType = 'Please select your skin type.';
     if (!form.preferredDate) e.preferredDate = 'Please select a date.';
     if (!form.preferredTime) e.preferredTime = 'Please select a time slot.';
-    if (!form.address.trim()) e.address = 'Home address is required.';
+    if (!/^\d{6}$/.test(form.pincode)) e.pincode = 'Enter a valid 6-digit pincode.';
+    if (!form.state) e.state = 'Please select a state.';
+    if (!form.city.trim()) e.city = 'Please select or enter a city.';
+    if (!form.block.trim()) e.block = 'Flat / block / building is required.';
+    if (!form.street.trim()) e.street = 'Street / road is required.';
     return e;
   };
   const val3 = () => {
     const e = {};
-    if (!otpVerified) e.otp = 'Please verify your phone via SMS OTP before confirming.';
     if (!form.agreeTerms) e.agreeTerms = 'Please agree to the Terms & Privacy Policy.';
     return e;
   };
@@ -399,34 +317,54 @@ export default function AmourAppointmentBooking() {
   };
   const goPrev = () => { setStep(s => s - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); };
 
-  // ── Submit ────────────────────────────────────────────────────────
-  const submit = async () => {
+  const bookingFee = form.isMember ? BOOKING_FEE_MEMBER : BOOKING_FEE_STANDARD;
+
+  // ── Dummy payment + submit ─────────────────────────────────────────
+  const runDummyPayment = async () => {
     const e = val3();
     if (Object.keys(e).length) {
       setErrors(e);
       document.getElementById(`f-${Object.keys(e)[0]}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
-    setSubmitting(true);
     setBanner(null);
+    setPaying(true);
+    // Simulated Razorpay-style processing delay.
+    // Replace this whole block with a real Razorpay Checkout call to go live.
+    await new Promise(resolve => setTimeout(resolve, 1600));
+    setPaying(false);
+    await finalizeBooking();
+  };
+
+  const finalizeBooking = async () => {
+    setSubmitting(true);
     const hDate = fmtHuman(form.preferredDate);
+    const svc = SERVICES.find(s => s.name === form.service);
+    const address = `${form.block}, ${form.street}, ${form.locality ? form.locality + ', ' : ''}${form.city}, ${form.state} - ${form.pincode}`;
     try {
       await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_ADMIN_TID, {
         customer_name: form.fullName,
         customer_email: form.email,
         customer_phone: form.phone,
         service_type: form.service,
+        service_price: svc ? inr(svc.price) : '',
+        skin_type: form.skinType,
+        skin_concerns: form.skinConcerns.join(', ') || '—',
         preferred_date: hDate,
         preferred_time: form.preferredTime,
-        address: form.address,
+        address,
         special_notes: form.specialNotes.trim() || '—',
+        membership: form.isMember ? 'Yes' : 'No',
+        amount_paid: inr(bookingFee),
       }, EMAILJS_PUBLIC_KEY);
       setSuccess({
         name: form.fullName, service: form.service, date: hDate,
-        time: form.preferredTime, address: form.address, gcalDate: fmtGCal(form.preferredDate),
+        time: form.preferredTime, address, gcalDate: fmtGCal(form.preferredDate),
+        amountPaid: bookingFee, isMember: form.isMember,
       });
     } catch (err) {
-      setBanner({ msg: 'Error sending your request. Please try again or WhatsApp us directly.', type: 'err' });
+      setBanner({ msg: 'Payment succeeded but confirmation could not be sent. Please WhatsApp us your booking details.', type: 'err' });
+    } finally {
       setSubmitting(false);
     }
   };
@@ -434,7 +372,7 @@ export default function AmourAppointmentBooking() {
   // ── Action URLs ───────────────────────────────────────────────────
   const waUrl = () => {
     if (!success) return '#';
-    const m = `Hello Amour Estilo! Confirming my booking:\n📌 ${success.service}\n📅 ${success.date} at ${success.time}\n📍 ${success.address}\nName: ${success.name}`;
+    const m = `Hello Amour Estilo! Confirming my booking:\n📌 ${success.service}\n📅 ${success.date} at ${success.time}\n📍 ${success.address}\nName: ${success.name}\nPaid: ${inr(success.amountPaid)}`;
     return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(m)}`;
   };
   const gcUrl = () => {
@@ -442,11 +380,9 @@ export default function AmourAppointmentBooking() {
     return `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('Amour Estilo — ' + success.service)}&dates=${success.gcalDate}/${success.gcalDate}&details=${encodeURIComponent(`Service: ${success.service}\nTime: ${success.time}`)}&location=${encodeURIComponent(success.address)}`;
   };
 
-  // ── Step helpers ──────────────────────────────────────────────────
-  const STEP_LABELS = ['Contact', 'Service', 'Confirm'];
+  const STEP_LABELS = ['Contact', 'Service & Details', 'Payment'];
   const ss = i => (i + 1 < step ? 'dn' : i + 1 === step ? 'act' : '');
 
-  // ── Render ────────────────────────────────────────────────────────
   return (
     <div className="ae">
       <div className="ae-hd">
@@ -470,10 +406,9 @@ export default function AmourAppointmentBooking() {
       </div>
 
       <div className="ae-card">
-        <div id="recaptcha-container" />
         {banner && <div className={`ae-banner ${banner.type}`}>{banner.msg}</div>}
 
-        {/* ══════════════════════════════ STEP 1 — Contact Details (no OTP) ══════════════════════════════ */}
+        {/* ══════════════════ STEP 1 — Contact Details ══════════════════ */}
         {step === 1 && (
           <>
             <div className="ae-sh">
@@ -484,59 +419,32 @@ export default function AmourAppointmentBooking() {
             <div className="ae-2">
               <div className="ae-f" id="f-fullName">
                 <label className="ae-lbl">Full Name</label>
-                <input
-                  className={`ae-in${errors.fullName ? ' e' : ''}`}
-                  type="text"
-                  value={form.fullName}
-                  placeholder="Your full name"
-                  onChange={e => upd('fullName', e.target.value)}
-                />
+                <input className={`ae-in${errors.fullName ? ' e' : ''}`} type="text" value={form.fullName} placeholder="Your full name" onChange={e => upd('fullName', e.target.value)} />
                 {errors.fullName && <div className="ae-er">{errors.fullName}</div>}
               </div>
               <div className="ae-f" id="f-email">
                 <label className="ae-lbl">Email Address</label>
-                <input
-                  className={`ae-in${errors.email ? ' e' : ''}`}
-                  type="email"
-                  value={form.email}
-                  placeholder="your@email.com"
-                  onChange={e => upd('email', e.target.value)}
-                />
+                <input className={`ae-in${errors.email ? ' e' : ''}`} type="email" value={form.email} placeholder="your@email.com" onChange={e => upd('email', e.target.value)} />
                 {errors.email && <div className="ae-er">{errors.email}</div>}
               </div>
             </div>
             <div className="ae-f" id="f-phone">
               <label className="ae-lbl">Phone Number</label>
               <div className={`ae-ph-box${errors.phone ? ' e' : ''}`}>
-                <PhoneInput
-                  international
-                  defaultCountry="IN"
-                  value={form.phone}
-                  onChange={onPhoneChange}
-                  placeholder="Mobile number"
-                />
+                <PhoneInput international defaultCountry="IN" value={form.phone} onChange={v => upd('phone', v || '')} placeholder="Mobile number" />
               </div>
               {errors.phone && <div className="ae-er">{errors.phone}</div>}
-              <div className="ae-wa-hint" style={{ marginTop: 12 }}>
-                <div className="ae-wa-hint-top">
-                  <span className="ae-wa-ic">📱</span>
-                  <span className="ae-wa-hint-title">Verified at Checkout</span>
-                </div>
-                <div className="ae-wa-hint-body">
-                  We'll send a one-time SMS code to this number at the final step to confirm your booking.
-                </div>
-              </div>
             </div>
             <button type="button" className="ae-sub-btn" onClick={goNext}>Continue — Service Details →</button>
           </>
         )}
 
-        {/* ══════════════════════════════ STEP 2 — Service & Schedule ══════════════════════════════ */}
+        {/* ══════════════════ STEP 2 — Service & Details ══════════════════ */}
         {step === 2 && (
           <>
             <div className="ae-sh">
               <span className="ae-si">II</span>
-              <span className="ae-st">Service & Schedule</span>
+              <span className="ae-st">Service</span>
               <div className="ae-sline" />
             </div>
             <div className="ae-f" id="f-service">
@@ -544,11 +452,41 @@ export default function AmourAppointmentBooking() {
               <div className="ae-sw">
                 <select className={`ae-sel${errors.service ? ' e' : ''}`} value={form.service} onChange={e => upd('service', e.target.value)}>
                   <option value="">Select a service</option>
-                  {SERVICES.map(s => <option key={s}>{s}</option>)}
+                  {SERVICES.map(s => <option key={s.name} value={s.name}>{s.name} — {inr(s.price)}</option>)}
                 </select>
                 <span className="ae-sa">▾</span>
               </div>
               {errors.service && <div className="ae-er">{errors.service}</div>}
+            </div>
+
+            <div className="ae-sep" />
+            <div className="ae-sh">
+              <span className="ae-si">III</span>
+              <span className="ae-st">Skin Type</span>
+              <div className="ae-sline" />
+            </div>
+            <div className="ae-f" id="f-skinType">
+              <div className="ae-pills">
+                {SKIN_TYPES.map(t => (
+                  <div key={t} className={`ae-pill${form.skinType === t ? ' sel' : ''}`} onClick={() => upd('skinType', t)}>{t}</div>
+                ))}
+              </div>
+              {errors.skinType && <div className="ae-er">{errors.skinType}</div>}
+            </div>
+            <div className="ae-f">
+              <label className="ae-lbl">Skin Concerns <span className="ae-opt">(Optional — select any)</span></label>
+              <div className="ae-pills">
+                {SKIN_CONCERNS.map(c => (
+                  <div key={c} className={`ae-pill${form.skinConcerns.includes(c) ? ' sel' : ''}`} onClick={() => toggleConcern(c)}>{c}</div>
+                ))}
+              </div>
+            </div>
+
+            <div className="ae-sep" />
+            <div className="ae-sh">
+              <span className="ae-si">IV</span>
+              <span className="ae-st">Schedule</span>
+              <div className="ae-sline" />
             </div>
             <div className="ae-2">
               <div className="ae-f" id="f-preferredDate">
@@ -577,21 +515,76 @@ export default function AmourAppointmentBooking() {
                 {errors.preferredTime && <div className="ae-er">{errors.preferredTime}</div>}
               </div>
             </div>
+
             <div className="ae-sep" />
             <div className="ae-sh">
-              <span className="ae-si">III</span>
-              <span className="ae-st">Location</span>
+              <span className="ae-si">V</span>
+              <span className="ae-st">Event Location</span>
               <div className="ae-sline" />
             </div>
-            <div className="ae-f" id="f-address">
-              <label className="ae-lbl">Home Address</label>
-              <textarea className={`ae-ta${errors.address ? ' e' : ''}`} value={form.address} rows={3} placeholder="Building, street, area, city, pincode" onChange={e => upd('address', e.target.value)} />
-              {errors.address && <div className="ae-er">{errors.address}</div>}
+            <div className="ae-2">
+              <div className="ae-f" id="f-pincode">
+                <label className="ae-lbl">Pincode</label>
+                <input
+                  className={`ae-in${errors.pincode ? ' e' : ''}`}
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={6}
+                  value={form.pincode}
+                  placeholder="560001"
+                  onChange={e => onPincodeChange(e.target.value)}
+                />
+                {pincodeStatus === 'loading' && <div style={{ fontSize: 10, color: 'var(--g500)', marginTop: 5 }}>Looking up pincode…</div>}
+                {pincodeStatus === 'ok' && <div style={{ fontSize: 10, color: 'var(--grn)', marginTop: 5 }}>✓ State & city auto-filled</div>}
+                {pincodeStatus === 'err' && <div style={{ fontSize: 10, color: 'var(--g500)', marginTop: 5 }}>Couldn't auto-detect — please select manually</div>}
+                {errors.pincode && <div className="ae-er">{errors.pincode}</div>}
+              </div>
+              <div className="ae-f" id="f-locality">
+                <label className="ae-lbl">Locality <span className="ae-opt">(Optional)</span></label>
+                <div className="ae-sw">
+                  <select className="ae-sel" value={form.locality} onChange={e => upd('locality', e.target.value)}>
+                    <option value="">{localityOptions.length ? 'Select locality' : 'Enter pincode first'}</option>
+                    {localityOptions.map(l => <option key={l}>{l}</option>)}
+                  </select>
+                  <span className="ae-sa">▾</span>
+                </div>
+              </div>
+            </div>
+            <div className="ae-2">
+              <div className="ae-f" id="f-state">
+                <label className="ae-lbl">State</label>
+                <div className="ae-sw">
+                  <select className={`ae-sel${errors.state ? ' e' : ''}`} value={form.state} onChange={e => upd('state', e.target.value)}>
+                    <option value="">Select state</option>
+                    {INDIAN_STATES.map(s => <option key={s}>{s}</option>)}
+                  </select>
+                  <span className="ae-sa">▾</span>
+                </div>
+                {errors.state && <div className="ae-er">{errors.state}</div>}
+              </div>
+              <div className="ae-f" id="f-city">
+                <label className="ae-lbl">City</label>
+                <input className={`ae-in${errors.city ? ' e' : ''}`} type="text" value={form.city} placeholder="City / district" onChange={e => upd('city', e.target.value)} />
+                {errors.city && <div className="ae-er">{errors.city}</div>}
+              </div>
+            </div>
+            <div className="ae-2">
+              <div className="ae-f" id="f-block">
+                <label className="ae-lbl">Flat / Block / Building</label>
+                <input className={`ae-in${errors.block ? ' e' : ''}`} type="text" value={form.block} placeholder="e.g. Flat 4B, Prestige Towers" onChange={e => upd('block', e.target.value)} />
+                {errors.block && <div className="ae-er">{errors.block}</div>}
+              </div>
+              <div className="ae-f" id="f-street">
+                <label className="ae-lbl">Street / Road</label>
+                <input className={`ae-in${errors.street ? ' e' : ''}`} type="text" value={form.street} placeholder="e.g. 100 Feet Road" onChange={e => upd('street', e.target.value)} />
+                {errors.street && <div className="ae-er">{errors.street}</div>}
+              </div>
             </div>
             <div className="ae-f">
               <label className="ae-lbl">Special Notes <span className="ae-opt">(Optional)</span></label>
-              <textarea className="ae-ta" value={form.specialNotes} rows={3} placeholder="Occasion details, skin concerns, reference inspiration…" onChange={e => upd('specialNotes', e.target.value)} />
+              <textarea className="ae-ta" value={form.specialNotes} rows={3} placeholder="Occasion details, reference inspiration…" onChange={e => upd('specialNotes', e.target.value)} />
             </div>
+
             <div style={{ display: 'flex', gap: 12 }}>
               <button type="button" className="ae-btn ae-btn-ol" style={{ flex: '0 0 auto', padding: '15px 20px' }} onClick={goPrev}>← Back</button>
               <button type="button" className="ae-sub-btn" style={{ marginTop: 0 }} onClick={goNext}>Review Booking →</button>
@@ -599,19 +592,23 @@ export default function AmourAppointmentBooking() {
           </>
         )}
 
-        {/* ══════════════════════════════ STEP 3 — Review, Verify (OTP), Confirm ══════════════════════════════ */}
+        {/* ══════════════════ STEP 3 — Review, Membership, Payment ══════════════════ */}
         {step === 3 && (
           <>
             <div className="ae-sh">
-              <span className="ae-si">IV</span>
-              <span className="ae-st">Review & Confirm</span>
+              <span className="ae-si">VI</span>
+              <span className="ae-st">Review Your Booking</span>
               <div className="ae-sline" />
             </div>
             <div className="ae-summ">
               {[
                 ['Name', form.fullName], ['Email', form.email], ['Phone', form.phone],
-                ['Service', form.service], ['Date', fmtHuman(form.preferredDate)],
-                ['Time', form.preferredTime], ['Address', form.address],
+                ['Service', (() => { const s = SERVICES.find(x => x.name === form.service); return s ? `${s.name} (${inr(s.price)})` : form.service; })()],
+                ['Skin Type', form.skinType],
+                ['Skin Concerns', form.skinConcerns.join(', ') || '—'],
+                ['Date', fmtHuman(form.preferredDate)],
+                ['Time', form.preferredTime],
+                ['Address', `${form.block}, ${form.street}, ${form.locality ? form.locality + ', ' : ''}${form.city}, ${form.state} - ${form.pincode}`],
                 ...(form.specialNotes ? [['Notes', form.specialNotes]] : []),
               ].map(([k, v]) => (
                 <div className="ae-summ-row" key={k}>
@@ -623,85 +620,48 @@ export default function AmourAppointmentBooking() {
 
             <div className="ae-sep" />
             <div className="ae-sh">
-              <span className="ae-si">V</span>
-              <span className="ae-st">Verify Your Phone</span>
+              <span className="ae-si">VII</span>
+              <span className="ae-st">Membership</span>
               <div className="ae-sline" />
             </div>
-            <div className="ae-f" id="f-otp">
-              <label className="ae-lbl">SMS OTP</label>
-              <div className="ae-otp-row">
-                <div className="ae-ph-box" style={{ pointerEvents: 'none', opacity: 0.7 }}>
-                  <span style={{ fontSize: 13, fontWeight: 300, color: 'var(--g500)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {form.phone}
-                  </span>
+            <div className={`ae-mem-card${form.isMember ? ' on' : ''}`}>
+              <div className="ae-mem-top">
+                <div className="ae-mem-info">
+                  <div className="ae-mem-t">Amour Membership</div>
+                  <div className="ae-mem-s">
+                    Join now and get {inr(MEMBERSHIP_DISCOUNT)} off your first service booking fee —
+                    pay {inr(BOOKING_FEE_MEMBER)} instead of {inr(BOOKING_FEE_STANDARD)}.
+                  </div>
                 </div>
-                <button
-                  type="button"
-                  className="ae-btn-sms"
-                  onClick={sendOtpViaSMS}
-                  disabled={otpSending || otpVerified || !form.phone}
-                >
-                  {otpSending ? (<><span className="ae-spin" />Sending</>) : (
-                    <>
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1.9-2 2-2zm0 14H6l-2 2V4h16v12z" />
-                      </svg>
-                      {otpSent ? 'Resend' : 'Send OTP'}
-                    </>
-                  )}
-                </button>
+                <label className="ae-switch">
+                  <input type="checkbox" checked={form.isMember} onChange={e => upd('isMember', e.target.checked)} />
+                  <span className="ae-switch-track" />
+                </label>
               </div>
-              {!otpSent && !otpVerified && (
-                <div className="ae-wa-hint">
-                  <div className="ae-wa-hint-top">
-                    <span className="ae-wa-ic">📱</span>
-                    <span className="ae-wa-hint-title">Final Step — Secure Verification</span>
-                  </div>
-                  <div className="ae-wa-hint-body">
-                    Tap <strong>Send OTP</strong> to receive a secure 6-digit code by SMS. Enter it below, then confirm your appointment.
-                  </div>
-                </div>
-              )}
-              {otpSent && !otpVerified && (
-                <>
-                  <p className="ae-otp-hint">
-                    Enter the 6-digit code sent via SMS to <strong>{form.phone}</strong>
-                  </p>
-                  <div className="ae-digits" onPaste={onPaste}>
-                    {digits.map((d, i) => (
-                      <input
-                        key={i}
-                        ref={el => (digitRefs.current[i] = el)}
-                        className={`ae-dig${otpErr ? ' e' : ''}${d ? ' fl' : ''}`}
-                        type="text"
-                        inputMode="numeric"
-                        maxLength={1}
-                        value={d}
-                        onChange={e => onDigit(i, e.target.value)}
-                        onKeyDown={e => onKey(i, e)}
-                        aria-label={`OTP digit ${i + 1}`}
-                      />
-                    ))}
-                  </div>
-                  <div className="ae-otp-meta">
-                    {otpErr ? <div className="ae-er" style={{ marginTop: 0 }}>{otpErr}</div> : <div />}
-                    <button type="button" className="ae-resend" disabled={resend > 0 || otpSending} onClick={sendOtpViaSMS}>
-                      {resend > 0 ? `Resend in ${resend}s` : 'Resend code'}
-                    </button>
-                  </div>
-                </>
-              )}
-              {otpVerified && (
-                <div className="ae-ok">
-                  <div className="ae-ok-ic">✓</div>
-                  Identity Verified
-                </div>
-              )}
-              {errors.otp && !otpVerified && <div className="ae-er">{errors.otp}</div>}
             </div>
 
             <div className="ae-sep" />
-            <div className="ae-f" id="f-agreeTerms">
+            <div className="ae-sh">
+              <span className="ae-si">VIII</span>
+              <span className="ae-st">Payment</span>
+              <div className="ae-sline" />
+            </div>
+            <div className="ae-price-box">
+              <div className="ae-price-row">
+                <span>Booking Fee</span>
+                <span>
+                  {form.isMember && <span className="ae-price-strike">{inr(BOOKING_FEE_STANDARD)}</span>}
+                  {inr(bookingFee)}
+                </span>
+              </div>
+              {form.isMember && <div className="ae-price-save">You save {inr(MEMBERSHIP_DISCOUNT)} with membership</div>}
+              <div className="ae-price-row total">
+                <span>Total Payable</span>
+                <span>{inr(bookingFee)}</span>
+              </div>
+            </div>
+
+            <div className="ae-f" id="f-agreeTerms" style={{ marginTop: 20 }}>
               <div className="ae-cr">
                 <input id="ae-tc" type="checkbox" className="ae-cb" checked={form.agreeTerms} onChange={e => upd('agreeTerms', e.target.checked)} />
                 <label htmlFor="ae-tc" className="ae-cbl">
@@ -710,13 +670,21 @@ export default function AmourAppointmentBooking() {
               </div>
               {errors.agreeTerms && <div className="ae-er" style={{ marginTop: 8 }}>{errors.agreeTerms}</div>}
             </div>
+
             <div style={{ display: 'flex', gap: 12 }}>
-              <button type="button" className="ae-btn ae-btn-ol" style={{ flex: '0 0 auto', padding: '15px 20px' }} onClick={goPrev}>← Edit</button>
-              <button type="button" className="ae-sub-btn" style={{ marginTop: 0 }} onClick={submit} disabled={submitting}>
-                {submitting && <span className="ae-spin" />}
-                {submitting ? 'Sending…' : 'Confirm Appointment'}
+              <button type="button" className="ae-btn ae-btn-ol" style={{ flex: '0 0 auto', padding: '15px 20px' }} onClick={goPrev} disabled={paying || submitting}>← Edit</button>
+              <button
+                type="button"
+                className="ae-sub-btn"
+                style={{ marginTop: 0 }}
+                onClick={runDummyPayment}
+                disabled={paying || submitting}
+              >
+                {(paying || submitting) && <span className="ae-spin" />}
+                {paying ? 'Processing Payment…' : submitting ? 'Confirming…' : `Pay ${inr(bookingFee)} & Confirm`}
               </button>
             </div>
+            <div className="ae-pay-note">Secured checkout · Test mode — no real charge will be made</div>
           </>
         )}
       </div>
@@ -726,11 +694,11 @@ export default function AmourAppointmentBooking() {
       {success && (
         <div className="ae-ov">
           <div className="ae-mo">
-            <div className="ae-mo-ic">✦</div>
-            <div className="ae-mo-t">Appointment Received</div>
+            <div className="ae-congrats-ic">🎉</div>
+            <div className="ae-mo-t">Congratulations!</div>
             <p className="ae-mo-b">
               Dear {success.name},<br /><br />
-              Your request for <strong>{success.service}</strong> on <strong>{success.date}</strong> at <strong>{success.time}</strong> has been received. Our team will confirm within 24 hours.
+              Your booking is <strong>confirmed</strong>. Payment of <strong>{inr(success.amountPaid)}</strong>{success.isMember ? ' (Member Rate)' : ''} was received for <strong>{success.service}</strong> on <strong>{success.date}</strong> at <strong>{success.time}</strong>. Our team will reach out shortly to finalize details.
             </p>
             <div className="ae-mo-tl">Luxury. Beauty. Elegance.</div>
             <div className="ae-mo-acts">
