@@ -3,15 +3,13 @@
  * ─────────────────────────────────────────────────────────────────────
  * Luxury appointment booking — Amour Estilo · On-Demand Home Service
  *
- * v4:
- *  - No top navbar (embed directly into a page)
- *  - Service field has no listed price
- *  - Skin concerns include Acne & Blemishes / Open Pores, nicer chip UI
- *  - Pay button opens a payment-method picker (Razorpay / UPI / Cards) —
- *    all DUMMY, no real charge is made
- *  - Membership ON → gold glossy "Pay & Confirm" button + gold-accented card
- *  - Section headers use a gold badge for visibility
- *  - Mobile overflow fixed (no more horizontal scroll / clipped content)
+ * v5:
+ *  - Payment step removed. "Confirm Booking" now saves the booking to
+ *    Firestore directly and shows the confirmation dialog — no payment
+ *    method picker, no dummy processing delay.
+ *  - Booking fee / membership discount is still shown as informational
+ *    pricing (e.g. "collected at appointment"), but nothing is charged
+ *    in-app.
  *
  * REQUIRED:
  *   npm install @emailjs/browser react-phone-number-input react-datepicker
@@ -20,21 +18,15 @@
  *   import 'react-phone-number-input/style.css';
  *   import 'react-datepicker/dist/react-datepicker.css';
  *
- * PAYMENT: this uses a DUMMY payment flow (method picker + simulated
- * delay + success). To go live, swap `runPayment()` for real gateway
- * calls per method (Razorpay Checkout, UPI intent/collect, or a card
- * processor) and resolve on their success callback instead of the
- * setTimeout below.
+ * DATA: on confirm, the full booking is written to Cloud Firestore
+ * (collection "bookings") via ./firebase.js — see setup guide.
  */
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import emailjs from '@emailjs/browser';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from './firebase';
 import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
 import DatePicker from 'react-datepicker';
-// ── CONFIG — replace with your real EmailJS values ─────────────────────
-const EMAILJS_SERVICE_ID = 'YOUR_SERVICE_ID';
-const EMAILJS_ADMIN_TID = 'YOUR_ADMIN_TEMPLATE_ID';
-const EMAILJS_PUBLIC_KEY = 'YOUR_PUBLIC_KEY';
-const ADMIN_EMAIL = 'info.amourestilo@gmail.com';
+// ── CONFIG ───────────────────────────────────────────────────────────
 const WHATSAPP_NUMBER = '919999999999';
 // ── Pricing ──────────────────────────────────────────────────────────
 const BOOKING_FEE_STANDARD = 19999;
@@ -58,11 +50,6 @@ const INDIAN_STATES = [
 const TIME_SLOTS = [
   '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '1:00 PM',
   '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM', '6:00 PM', '7:00 PM',
-];
-const PAYMENT_METHODS = [
-  { id: 'razorpay', label: 'Razorpay', sub: 'All major banks & wallets', icon: '⚡' },
-  { id: 'upi', label: 'UPI', sub: 'GPay, PhonePe, Paytm & more', icon: '📲' },
-  { id: 'card', label: 'Credit / Debit Card', sub: 'Visa, Mastercard, RuPay', icon: '💳' },
 ];
 const inr = n => `₹${Number(n).toLocaleString('en-IN')}`;
 const fmtHuman = d =>
@@ -175,7 +162,6 @@ html,body{overflow-x:hidden;max-width:100%}
 @keyframes ae-up{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 .ae-ov{position:fixed;inset:0;background:rgba(10,10,10,.86);display:flex;align-items:center;justify-content:center;z-index:9999;animation:ae-fi .4s ease;padding:20px}
 .ae-mo{background:var(--wh);max-width:440px;width:100%;padding:44px 30px 36px;border-radius:2px;text-align:center;animation:ae-up .5s ease;max-height:90vh;overflow-y:auto}
-.ae-mo-close{position:absolute;top:14px;right:16px;background:none;border:none;font-size:18px;color:var(--g500);cursor:pointer;line-height:1;padding:6px}
 .ae-mo-t{font-family:var(--serif);font-size:21px;font-weight:300;letter-spacing:2px;text-transform:uppercase;color:var(--bk);margin-bottom:10px}
 .ae-mo-b{font-size:12px;font-weight:300;color:var(--g700);line-height:1.9;margin-bottom:20px}
 .ae-mo-tl{font-family:var(--serif);font-style:italic;font-size:14px;font-weight:300;color:var(--g500);margin-bottom:26px;letter-spacing:1px}
@@ -213,19 +199,6 @@ html,body{overflow-x:hidden;max-width:100%}
 .ae-price-strike{text-decoration:line-through;color:var(--g500);margin-right:8px;font-weight:300}
 .ae-price-save{color:var(--grn);font-size:9px;font-weight:500;text-transform:uppercase;letter-spacing:1px;margin-top:4px;text-align:right}
 .ae-pay-note{font-size:9px;font-weight:300;color:var(--g500);text-align:center;margin-top:14px;letter-spacing:.2px;line-height:1.6}
-/* Payment method modal */
-.ae-pay-amt{font-family:var(--serif);font-size:30px;font-weight:400;color:var(--bk);margin-bottom:4px}
-.ae-pay-amt.gold{color:var(--gold1)}
-.ae-pay-sub{font-size:10px;color:var(--g500);letter-spacing:1px;text-transform:uppercase;margin-bottom:26px}
-.ae-pm-list{display:flex;flex-direction:column;gap:10px;text-align:left;margin-bottom:8px}
-.ae-pm{display:flex;align-items:center;gap:14px;border:1px solid var(--g300);border-radius:2px;padding:15px 16px;cursor:pointer;transition:border-color .2s,background .2s}
-.ae-pm:hover{border-color:var(--gold2);background:var(--g50)}
-.ae-pm-ic{font-size:20px;width:32px;text-align:center;flex-shrink:0}
-.ae-pm-t{font-size:13px;font-weight:500;color:var(--bk)}
-.ae-pm-s{font-size:10px;font-weight:300;color:var(--g500);margin-top:2px}
-.ae-pm-arrow{margin-left:auto;color:var(--g500);flex-shrink:0}
-.ae-processing{display:flex;flex-direction:column;align-items:center;gap:16px;padding:20px 0}
-.ae-processing-ic{width:52px;height:52px;border:1.5px solid var(--g300);border-top-color:var(--gold2);border-radius:50%;animation:ae-sp 1s linear infinite}
 @media(max-width:580px){
   .ae-card{padding:30px 16px 50px}
   .ae-2{grid-template-columns:1fr}
@@ -250,12 +223,10 @@ export default function AmourAppointmentBooking() {
     specialNotes: '', agreeTerms: false, isMember: false,
   });
   const [errors, setErrors] = useState({});
-  const [step, setStep] = useState(1); // 1 = Contact, 2 = Service & Details, 3 = Review & Payment
+  const [step, setStep] = useState(1); // 1 = Contact, 2 = Service & Details, 3 = Review & Confirm
   const [localityOptions, setLocalityOptions] = useState([]);
   const [pincodeStatus, setPincodeStatus] = useState(''); // '', 'loading', 'ok', 'err'
   const [submitting, setSubmitting] = useState(false);
-  const [showPayModal, setShowPayModal] = useState(false);
-  const [payPhase, setPayPhase] = useState('choose'); // 'choose' | 'processing'
   const [success, setSuccess] = useState(null);
   const [banner, setBanner] = useState(null);
   const pinTimer = useRef(null);
@@ -357,8 +328,8 @@ export default function AmourAppointmentBooking() {
 
   const bookingFee = form.isMember ? BOOKING_FEE_MEMBER : BOOKING_FEE_STANDARD;
 
-  // ── Open payment-method picker ─────────────────────────────────────
-  const openPayment = () => {
+  // ── Confirm Booking → validate terms, then save straight to Firestore ──
+  const confirmBooking = async () => {
     const e = val3();
     if (Object.keys(e).length) {
       setErrors(e);
@@ -366,48 +337,43 @@ export default function AmourAppointmentBooking() {
       return;
     }
     setBanner(null);
-    setPayPhase('choose');
-    setShowPayModal(true);
+    await finalizeBooking();
   };
 
-  // ── Dummy payment via chosen method ────────────────────────────────
-  const runPayment = async method => {
-    setPayPhase('processing');
-    // Simulated gateway processing delay.
-    // Replace this whole block with a real call for `method`
-    // (Razorpay Checkout / UPI intent / card processor).
-    await new Promise(resolve => setTimeout(resolve, 1700));
-    setShowPayModal(false);
-    await finalizeBooking(method);
-  };
-
-  const finalizeBooking = async method => {
+  const finalizeBooking = async () => {
     setSubmitting(true);
     const hDate = fmtHuman(form.preferredDate);
     const address = `${form.block}, ${form.street}, ${form.locality ? form.locality + ', ' : ''}${form.city}, ${form.state} - ${form.pincode}`;
     try {
-      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_ADMIN_TID, {
-        customer_name: form.fullName,
-        customer_email: form.email,
-        customer_phone: form.phone,
-        service_type: form.service,
-        skin_type: form.skinType,
-        skin_concerns: form.skinConcerns.join(', ') || '—',
-        preferred_date: hDate,
-        preferred_time: form.preferredTime,
+      await addDoc(collection(db, 'bookings'), {
+        fullName: form.fullName,
+        email: form.email,
+        phone: form.phone,
+        service: form.service,
+        skinType: form.skinType,
+        skinConcerns: form.skinConcerns,
+        preferredDate: hDate,
+        preferredTime: form.preferredTime,
+        pincode: form.pincode,
+        state: form.state,
+        city: form.city,
+        locality: form.locality || '',
+        block: form.block,
+        street: form.street,
         address,
-        special_notes: form.specialNotes.trim() || '—',
-        membership: form.isMember ? 'Yes' : 'No',
-        payment_method: method,
-        amount_paid: inr(bookingFee),
-      }, EMAILJS_PUBLIC_KEY);
+        specialNotes: form.specialNotes.trim() || '',
+        isMember: form.isMember,
+        bookingFee: bookingFee,
+        status: 'pending',
+        createdAt: serverTimestamp(),
+      });
       setSuccess({
         name: form.fullName, service: form.service, date: hDate,
         time: form.preferredTime, address, gcalDate: fmtGCal(form.preferredDate),
-        amountPaid: bookingFee, isMember: form.isMember, method,
+        bookingFee, isMember: form.isMember,
       });
     } catch (err) {
-      setBanner({ msg: 'Payment succeeded but confirmation could not be sent. Please WhatsApp us your booking details.', type: 'err' });
+      setBanner({ msg: 'Something went wrong and the booking could not be saved. Please try again or WhatsApp us your booking details.', type: 'err' });
     } finally {
       setSubmitting(false);
     }
@@ -416,7 +382,7 @@ export default function AmourAppointmentBooking() {
   // ── Action URLs ───────────────────────────────────────────────────
   const waUrl = () => {
     if (!success) return '#';
-    const m = `Hello Amour Estilo! Confirming my booking:\n📌 ${success.service}\n📅 ${success.date} at ${success.time}\n📍 ${success.address}\nName: ${success.name}\nPaid: ${inr(success.amountPaid)}`;
+    const m = `Hello Amour Estilo! Confirming my booking:\n📌 ${success.service}\n📅 ${success.date} at ${success.time}\n📍 ${success.address}\nName: ${success.name}`;
     return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(m)}`;
   };
   const gcUrl = () => {
@@ -424,7 +390,7 @@ export default function AmourAppointmentBooking() {
     return `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('Amour Estilo — ' + success.service)}&dates=${success.gcalDate}/${success.gcalDate}&details=${encodeURIComponent(`Service: ${success.service}\nTime: ${success.time}`)}&location=${encodeURIComponent(success.address)}`;
   };
 
-  const STEP_LABELS = ['Contact', 'Details', 'Payment'];
+  const STEP_LABELS = ['Contact', 'Details', 'Confirm'];
   const ss = i => (i + 1 < step ? 'dn' : i + 1 === step ? 'act' : '');
 
   return (
@@ -633,7 +599,7 @@ export default function AmourAppointmentBooking() {
           </>
         )}
 
-        {/* ══════════════════ STEP 3 — Review, Membership, Payment ══════════════════ */}
+        {/* ══════════════════ STEP 3 — Review, Membership & Confirm ══════════════════ */}
         {step === 3 && (
           <>
             <div className="ae-sh">
@@ -670,8 +636,8 @@ export default function AmourAppointmentBooking() {
                 <div className="ae-mem-info">
                   <div className="ae-mem-t"><span className="ae-mem-crown">♛</span> Privé Membership</div>
                   <div className="ae-mem-s">
-                    Join now and get {inr(MEMBERSHIP_DISCOUNT)} off your first service booking fee —
-                    pay {inr(BOOKING_FEE_MEMBER)} instead of {inr(BOOKING_FEE_STANDARD)}.
+                    Join now and get {inr(MEMBERSHIP_DISCOUNT)} off your service booking fee —
+                    {inr(BOOKING_FEE_MEMBER)} instead of {inr(BOOKING_FEE_STANDARD)}.
                   </div>
                 </div>
                 <label className="ae-switch">
@@ -681,12 +647,6 @@ export default function AmourAppointmentBooking() {
               </div>
             </div>
 
-            <div className="ae-sep" />
-            <div className="ae-sh">
-              <span className="ae-si">8</span>
-              <span className="ae-st">Payment</span>
-              <div className="ae-sline" />
-            </div>
             <div className="ae-price-box">
               <div className="ae-price-row">
                 <span>Booking Fee</span>
@@ -697,10 +657,11 @@ export default function AmourAppointmentBooking() {
               </div>
               {form.isMember && <div className="ae-price-save">You save {inr(MEMBERSHIP_DISCOUNT)} with membership</div>}
               <div className="ae-price-row total">
-                <span>Total Payable</span>
+                <span>Total Due</span>
                 <span>{inr(bookingFee)}</span>
               </div>
             </div>
+            <div className="ae-pay-note">Collected at the time of service — no online payment required to book.</div>
 
             <div className="ae-f" id="f-agreeTerms" style={{ marginTop: 20 }}>
               <div className="ae-cr">
@@ -718,55 +679,18 @@ export default function AmourAppointmentBooking() {
                 type="button"
                 className={`ae-sub-btn${form.isMember ? ' ae-pay-btn-gold' : ''}`}
                 style={{ marginTop: 0 }}
-                onClick={openPayment}
+                onClick={confirmBooking}
                 disabled={submitting}
               >
                 {submitting && <span className={`ae-spin${form.isMember ? ' dk' : ''}`} />}
-                {submitting ? 'Confirming…' : `Pay ${inr(bookingFee)} & Confirm`}
+                {submitting ? 'Confirming…' : 'Confirm Booking'}
               </button>
             </div>
-            <div className="ae-pay-note">Secured checkout · Test mode — no real charge will be made</div>
           </>
         )}
       </div>
 
       <div className="ae-ft">Amour Estilo · Luxury Beauty Atelier · Bengaluru</div>
-
-      {/* Payment method picker / processing modal */}
-      {showPayModal && (
-        <div className="ae-ov">
-          <div className="ae-mo" style={{ position: 'relative' }}>
-            {payPhase === 'choose' && (
-              <button className="ae-mo-close" onClick={() => setShowPayModal(false)} aria-label="Close">✕</button>
-            )}
-            {payPhase === 'choose' ? (
-              <>
-                <div className={`ae-pay-amt${form.isMember ? ' gold' : ''}`}>{inr(bookingFee)}</div>
-                <div className="ae-pay-sub">{form.isMember ? 'Privé Member Rate' : 'Booking Fee'}</div>
-                <div className="ae-pm-list">
-                  {PAYMENT_METHODS.map(m => (
-                    <div key={m.id} className="ae-pm" onClick={() => runPayment(m.label)}>
-                      <span className="ae-pm-ic">{m.icon}</span>
-                      <div>
-                        <div className="ae-pm-t">{m.label}</div>
-                        <div className="ae-pm-s">{m.sub}</div>
-                      </div>
-                      <span className="ae-pm-arrow">→</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="ae-pay-note">Test mode — no real charge will be made</div>
-              </>
-            ) : (
-              <div className="ae-processing">
-                <div className="ae-processing-ic" />
-                <div className="ae-mo-t" style={{ fontSize: 16 }}>Processing Payment</div>
-                <div className="ae-mo-b" style={{ marginBottom: 0 }}>Please wait while we confirm your transaction…</div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* Success modal */}
       {success && (
@@ -776,7 +700,7 @@ export default function AmourAppointmentBooking() {
             <div className="ae-mo-t">Congratulations!</div>
             <p className="ae-mo-b">
               Dear {success.name},<br /><br />
-              Your booking is <strong>confirmed</strong>. Payment of <strong>{inr(success.amountPaid)}</strong>{success.isMember ? ' (Member Rate)' : ''} via <strong>{success.method}</strong> was received for <strong>{success.service}</strong> on <strong>{success.date}</strong> at <strong>{success.time}</strong>. Our team will reach out shortly to finalize details.
+              Your booking is <strong>confirmed</strong> for <strong>{success.service}</strong> on <strong>{success.date}</strong> at <strong>{success.time}</strong>{success.isMember ? ' (Privé Member Rate)' : ''}. The booking fee of <strong>{inr(success.bookingFee)}</strong> will be collected at the time of service. Our team will reach out shortly to finalize details.
             </p>
             <div className="ae-mo-tl">Luxury. Beauty. Elegance.</div>
             <div className="ae-mo-acts">
