@@ -1,39 +1,72 @@
-import './App.css';
-import ResponsiveLayout from './Components/ResponsiveLayout.jsx';
-import AmourEstiloAbout from './Components/AmourEstiloAbout.jsx';
-import AmourAppointmentBooking from './Components/Amourappointmentbooking';
-import Amourestilohomepage from './Components/Amourestilohomepage';
-import Amourestilocareers from './Components/Amourestilocareers';
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import HouseOfAmourEstilo from './Components/HouseOfAmourEstilo';
-import SkinColorTheory from './Components/SkinColorTheory.jsx';
-import Amourestiloexperience from './Components/Amourestiloexperience';
-import AmourEstiloPrive from './Components/AmourEstiloPrive';
-import AmourEstiloDashboard from './Components/AmourEstiloDashboard';
+import "./App.css";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-
-
+import ResponsiveLayout from "./Components/ResponsiveLayout.jsx";
+import AmourEstiloAbout from "./Components/AmourEstiloAbout.jsx";
+import AmourAppointmentBooking from "./Components/Amourappointmentbooking.jsx";
+import Amourestilohomepage from "./Components/Amourestilohomepage.jsx";
+import Amourestilocareers from "./Components/Amourestilocareers.jsx";
+import HouseOfAmourEstilo from "./Components/HouseOfAmourEstilo.jsx";
+import SkinColorTheory from "./Components/SkinColorTheory.jsx";
+import Amourestiloexperience from "./Components/Amourestiloexperience.jsx";
+import AmourEstiloPrive from "./Components/AmourEstiloPrive.jsx";
+import AmourEstiloDashboard from "./Components/AmourEstiloDashboard.jsx";
 
 function App() {
   return (
-    <Router>
-
+    <BrowserRouter>
       <ResponsiveLayout />
 
       <Routes>
         <Route path="/" element={<Amourestilohomepage />} />
-        <Route path="/AmourEstiloAbout" element={<AmourEstiloAbout />} />
-        <Route path="/HouseOfAmourEstilo" element={< HouseOfAmourEstilo/>} />
-        <Route path="/AmourAppointmentBooking" element={<AmourAppointmentBooking />} />
-        <Route path="/Amourestilocareers" element={<Amourestilocareers />} />
-        <Route path="/SkinColorTheory" element={<SkinColorTheory />} />        
-        <Route path="/AmourEstiloPrive" element={< AmourEstiloPrive/>} />
-                <Route path="/Amourestiloexperience" element={<Amourestiloexperience />} />        
-                <Route path="/AmourEstiloDashboard" element={<AmourEstiloDashboard />} />
 
+        <Route
+          path="/AmourEstiloAbout"
+          element={<AmourEstiloAbout />}
+        />
 
+        <Route
+          path="/HouseOfAmourEstilo"
+          element={<HouseOfAmourEstilo />}
+        />
+
+        <Route
+          path="/AmourAppointmentBooking"
+          element={<AmourAppointmentBooking />}
+        />
+
+        <Route
+          path="/Amourestilocareers"
+          element={<Amourestilocareers />}
+        />
+
+        <Route
+          path="/SkinColorTheory"
+          element={<SkinColorTheory />}
+        />
+
+        <Route
+          path="/AmourEstiloPrive"
+          element={<AmourEstiloPrive />}
+        />
+
+        <Route
+          path="/Amourestiloexperience"
+          element={<Amourestiloexperience />}
+        />
+
+        <Route
+          path="/AmourEstiloDashboard"
+          element={<AmourEstiloDashboard />}
+        />
+
+        {/* 404 */}
+        <Route
+          path="*"
+          element={<h1>404 - Page Not Found</h1>}
+        />
       </Routes>
-    </Router>
+    </BrowserRouter>
   );
 }
 
