@@ -40,9 +40,7 @@ export default function Footer() {
               lineHeight: 1.6,
             }}
           >
-            Contemporary fashion inspired by
-            elegance, restraint, and modern
-            expression.
+<AmourEstiloDasboard/>
           </Typography>
         </Grid>
 
