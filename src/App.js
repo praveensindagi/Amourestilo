@@ -9,6 +9,8 @@ import HouseOfAmourEstilo from './Components/HouseOfAmourEstilo';
 import SkinColorTheory from './Components/SkinColorTheory.jsx';
 import Amourestiloexperience from './Components/Amourestiloexperience';
 import AmourEstiloPrive from './Components/AmourEstiloPrive';
+import AmourEstiloDashboard from './Components/AmourEstiloDashboard';
+
 
 
 
@@ -26,7 +28,8 @@ function App() {
         <Route path="/Amourestilocareers" element={<Amourestilocareers />} />
         <Route path="/SkinColorTheory" element={<SkinColorTheory />} />        
         <Route path="/AmourEstiloPrive" element={< AmourEstiloPrive/>} />
-                <Route path="/Amourestiloexperience" element={<Amourestiloexperience />} />
+                <Route path="/Amourestiloexperience" element={<Amourestiloexperience />} />        
+                <Route path="/AmourEstiloDashboard" element={<AmourEstiloDashboard />} />
 
 
       </Routes>
