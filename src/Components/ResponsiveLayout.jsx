@@ -34,6 +34,8 @@ const mainMenu = [
   { name: "Personal Color Analysis", path: "/SkinColorTheory" },
   { name: "Join The Maison", path: "/Amourestilocareers" },
   { name: "Join Prive", path: "/AmourEstiloPrive" },
+    { name: "Dashboard ", path: "/AmourEstiloDashboard" },
+  
 ];
 
 const subMenu = ["Customer Care", "Store Locator", "Sustainability"];
