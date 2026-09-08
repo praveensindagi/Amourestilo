@@ -28,13 +28,14 @@ const theme = createTheme({
 const mainMenu = [
   { name: "Home", path: "/" },
   { name: "Reserve Your Experience", path: "/Amourappointmentbooking" },
+      { name: "Dashboard ", path: "/AmourEstiloDashboard" },
   { name: "Maison Amour Estilo", path: "/AmourEstiloAbout" },
   { name: "Bespoke Experiences", path: "/Amourestiloexperience" },
   { name: "Skin Consultation", path: "/HouseOfAmourEstilo" },
   { name: "Personal Color Analysis", path: "/SkinColorTheory" },
   { name: "Join The Maison", path: "/Amourestilocareers" },
   { name: "Join Prive", path: "/AmourEstiloPrive" },
-    { name: "Dashboard ", path: "/AmourEstiloDashboard" },
+
   
 ];
 
