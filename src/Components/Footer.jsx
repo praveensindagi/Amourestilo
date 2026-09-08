@@ -7,6 +7,7 @@ import {
 import InstagramIcon from "@mui/icons-material/Instagram";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import TwitterIcon from "@mui/icons-material/Twitter";
+import { NavLink } from "react-router-dom";
 
 export default function Footer() {
   return (
@@ -39,8 +40,11 @@ export default function Footer() {
               color: "#d5d5d5",
               lineHeight: 1.6,
             }}
-          >
-India's premier luxury makeup atelier. High Fashion. Haute Standard. Bengaluru & beyond.
+          > NavLink to="/AmourEstiloDashboard">
+
+  Dashboard
+
+</NavLink>
           </Typography>
         </Grid>
 
