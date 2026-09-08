@@ -66,7 +66,7 @@ function App() {
           element={<h1>404 - Page Not Found</h1>}
         />
       </Routes>
-            <ResponsiveLayout/>
+            </ResponsiveLayout>
     </BrowserRouter>
   );
 }
