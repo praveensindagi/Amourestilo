@@ -15,7 +15,7 @@ import AmourEstiloDashboard from "./Components/AmourEstiloDashboard.jsx";
 function App() {
   return (
     <BrowserRouter>
-      <ResponsiveLayout />
+      <ResponsiveLayout>
 
       <Routes>
         <Route path="/" element={<Amourestilohomepage />} />
@@ -66,6 +66,7 @@ function App() {
           element={<h1>404 - Page Not Found</h1>}
         />
       </Routes>
+            <ResponsiveLayout/>
     </BrowserRouter>
   );
 }
