@@ -80,6 +80,15 @@ async function fetchBookings(idToken) {
   if (!res.ok) throw new Error(data.error?.message || "Failed to fetch bookings");
   return (data.documents || []).map(decodeDoc);
 }
+async function fetchStaffRole(uid, idToken) {
+  const res = await fetch(`${FIRESTORE_BASE}/staff/${uid}`, { headers: { Authorization: `Bearer ${idToken}` } });
+  if (res.status === 404) throw new Error("No staff record found for this account — ask an admin to add you to the staff collection.");
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error?.message || "Failed to fetch staff role");
+  const doc = decodeDoc(data);
+  if (!doc.role) throw new Error("Your staff record has no role assigned.");
+  return doc.role;
+}
 async function patchBooking(id, patchObj, idToken) {
   const mask = Object.keys(patchObj).map((k) => `updateMask.fieldPaths=${encodeURIComponent(k)}`).join("&");
   const res = await fetch(`${FIRESTORE_BASE}/bookings/${id}?${mask}`, {
@@ -140,33 +149,6 @@ const REVENUE_TREND = [
   { month: "Jul", revenue: 452000 }, { month: "Aug", revenue: 470000 },
   { month: "Sep (pred.)", revenue: 505000 },
 ];
-
-/* ---- Mock bookings used only by the "Skip login (preview)" path ---- */
-const MOCK_BOOKINGS = [
-  {
-    id: "mock1", clientName: "Ananya Rao", clientPhone: "9876543210", clientEmail: "ananya@example.com",
-    service: { name: "Bridal Makeup", category: "Bridal Makeup" }, artistId: "a1", artistName: "Bhavana K R",
-    location: { type: "outcall", address: "Indiranagar, Bengaluru" }, date: "12 Sep 2026", startTime: "10:00 AM",
-    status: "pending", payment: { total: 25000, isMember: true }, skinType: "Combination", skinConcerns: ["Dullness"],
-    notes: "Wants a soft glam look", createdAt: "2026-09-01",
-  },
-  {
-    id: "mock2", clientName: "Priya Menon", clientPhone: "9123456780", clientEmail: "priya@example.com",
-    service: { name: "Cocktail Look", category: "Cocktail Look" }, artistId: "a2", artistName: "Ritika Shah",
-    location: { type: "outcall", address: "Koramangala, Bengaluru" }, date: "15 Sep 2026", startTime: "4:00 PM",
-    status: "confirmed", payment: { total: 8000, isMember: false }, skinType: "", skinConcerns: [], notes: "",
-    createdAt: "2026-09-03",
-  },
-  {
-    id: "mock3", clientName: "Sneha Iyer", clientPhone: "9988776655", clientEmail: "sneha@example.com",
-    service: { name: "Professional Shoot", category: "Professional Shoot" }, artistId: "a3", artistName: "Aisha Khan",
-    location: { type: "outcall", address: "HSR Layout, Bengaluru" }, date: "20 Sep 2026", startTime: "9:00 AM",
-    status: "completed", payment: { total: 12000, isMember: false }, skinType: "Oily", skinConcerns: ["Acne", "Pores"],
-    notes: "Editorial shoot, needs HD-finish makeup", createdAt: "2026-08-28",
-  },
-];
-
-const PREVIEW_TOKEN = "preview-token";
 
 /* ------------------------------------------------------------------ */
 /* THEME                                                               */
@@ -611,7 +593,7 @@ function BookingGridTable({ bookings, onOpen, sortKey, onSort }) {
 
 function Sidebar({ items, active, onChange, themeMode, toggleTheme, onLogout, roleLabel }) {
   return (
-    <div className="hidden md:flex flex-col fixed left-0 top-0 h-screen w-64 bg-[var(--bg2)] border-r border-[var(--border)] px-4 py-6 z-40">
+    <div className="hidden md:flex flex-col fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-[var(--bg2)] border-r border-[var(--border)] px-4 py-6 z-40">
       <div className="mb-8 px-2 flex items-center gap-2.5">
         <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: tint("--accent", 16) }}>
           <Scissors size={16} style={{ color: v("--accent") }} />
@@ -659,7 +641,7 @@ function Sidebar({ items, active, onChange, themeMode, toggleTheme, onLogout, ro
 
 function MobileTopBar({ themeMode, toggleTheme, title }) {
   return (
-    <div className="md:hidden sticky top-0 z-30 bg-[var(--bg)]/90 backdrop-blur-md px-5 pt-6 pb-3 flex items-center justify-between">
+    <div className="md:hidden sticky top-14 z-30 bg-[var(--bg)]/90 backdrop-blur-md px-5 pt-6 pb-3 flex items-center justify-between">
       <div>
         <p className="text-[10px] tracking-[0.25em] uppercase" style={{ color: v("--accent") }}>Amour Estilo</p>
         <h1 className="text-lg font-semibold mt-0.5 text-[var(--label)]">{title}</h1>
@@ -702,22 +684,15 @@ function MobileBottomNav({ items, active, onChange }) {
 /* LOGIN — real Firebase Auth email/password                          */
 /* ------------------------------------------------------------------ */
 
-function LoginScreen({ onLogin, onSkipLogin, themeMode, toggleTheme, loading, error }) {
+function LoginScreen({ onLogin, themeMode, toggleTheme, loading, error }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
-  const [role, setRole] = useState("admin");
-
-  const roles = [
-    { key: "artist", label: "Artist", icon: User, cv: "--blue" },
-    { key: "admin", label: "Admin", icon: Users, cv: "--purple" },
-    { key: "super_admin", label: "Super Admin", icon: TrendingUp, cv: "--green" },
-  ];
 
   function submit(e) {
     e.preventDefault();
     if (!email.trim() || !password) return;
-    onLogin(email.trim(), password, role);
+    onLogin(email.trim(), password);
   }
 
   return (
@@ -755,35 +730,11 @@ function LoginScreen({ onLogin, onSkipLogin, themeMode, toggleTheme, loading, er
           </div>
         </div>
 
-        <div>
-          <p className="text-[11px] uppercase tracking-wider text-[var(--label3)] mb-2 font-medium mt-1">Sign in as</p>
-          <div className="grid grid-cols-3 gap-2">
-            {roles.map((r) => (
-              <button type="button" key={r.key} onClick={() => setRole(r.key)}
-                className="flex flex-col items-center gap-1.5 py-3 rounded-2xl border transition-colors"
-                style={role === r.key ? { borderColor: v(r.cv), backgroundColor: tint(r.cv, 12) } : { borderColor: v("--border"), backgroundColor: v("--bg2") }}>
-                <r.icon size={16} style={{ color: role === r.key ? v(r.cv) : v("--label3") }} />
-                <span className="text-[10px] font-semibold" style={{ color: role === r.key ? v(r.cv) : v("--label3") }}>{r.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
         <button type="submit" disabled={loading} className="w-full py-3.5 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-60" style={{ backgroundColor: v("--accent"), color: "#fff" }}>
           {loading && <RefreshCw size={15} className="spin" />}
           {loading ? "Signing in…" : "Sign in"}
         </button>
-
-        {process.env.NODE_ENV === "development" && (
-          <button
-            type="button"
-            onClick={() => onSkipLogin(role)}
-            className="w-full py-3 rounded-2xl font-semibold text-xs border border-dashed"
-            style={{ borderColor: v("--label3"), color: v("--label3") }}
-          >
-            Skip login (preview only)
-          </button>
-        )}
+        <p className="text-[11px] text-[var(--label3)] text-center pt-1">Your role (Artist / Admin / Super Admin) is looked up automatically from your staff record — no need to choose it.</p>
       </form>
     </div>
   );
@@ -1059,13 +1010,6 @@ export default function AmourEstiloDashboard() {
   const selected = bookings.find((b) => b.id === selectedId) || null;
 
   const loadBookings = useCallback(async (token) => {
-    // Preview mode never hits Firestore — just serves local mock data.
-    if (token === PREVIEW_TOKEN) {
-      setBookingsLoading(true); setBookingsError("");
-      setBookings(MOCK_BOOKINGS);
-      setBookingsLoading(false);
-      return;
-    }
     setBookingsLoading(true); setBookingsError("");
     try {
       const docs = await fetchBookings(token);
@@ -1077,32 +1021,21 @@ export default function AmourEstiloDashboard() {
     }
   }, []);
 
-  async function handleLogin(email, password, chosenRole) {
+  async function handleLogin(email, password) {
     setAuthLoading(true); setAuthError("");
     try {
       const auth = await signInWithEmail(email, password);
+      const realRole = await fetchStaffRole(auth.localId, auth.idToken);
       setIdToken(auth.idToken);
       setAuthEmail(auth.email || email);
-      setRole(chosenRole);
-      setSection(chosenRole === "super_admin" ? "home" : "bookings");
+      setRole(realRole);
+      setSection(realRole === "super_admin" ? "home" : "bookings");
       await loadBookings(auth.idToken);
     } catch (err) {
       setAuthError(err.message);
     } finally {
       setAuthLoading(false);
     }
-  }
-
-  // Preview-only bypass: skips Firebase Auth entirely and loads mock bookings.
-  // The button that triggers this only renders when NODE_ENV === "development",
-  // so it's stripped out of production builds automatically.
-  async function handleSkipLogin(chosenRole) {
-    setAuthError("");
-    setAuthEmail("preview@amourestilo.com");
-    setIdToken(PREVIEW_TOKEN);
-    setRole(chosenRole);
-    setSection(chosenRole === "super_admin" ? "home" : "bookings");
-    await loadBookings(PREVIEW_TOKEN);
   }
 
   function handleLogout() {
@@ -1112,7 +1045,6 @@ export default function AmourEstiloDashboard() {
   async function handleStatusChange(id, newStatus) {
     setSaving(true);
     setBookings((cur) => cur.map((b) => (b.id === id ? { ...b, status: newStatus } : b))); // optimistic
-    if (idToken === PREVIEW_TOKEN) { setSaving(false); return; } // preview: local-only, no network call
     try {
       await patchBooking(id, { status: newStatus }, idToken);
     } catch (err) {
@@ -1128,7 +1060,6 @@ export default function AmourEstiloDashboard() {
     if (!artist || !selected) return;
     setSaving(true);
     setBookings((cur) => cur.map((b) => (b.id === selected.id ? { ...b, artistId: artist.id, artistName: artist.name } : b)));
-    if (idToken === PREVIEW_TOKEN) { setSaving(false); return; } // preview: local-only, no network call
     try {
       await patchBooking(selected.id, { artistId: artist.id, artistName: artist.name }, idToken);
     } catch (err) {
@@ -1145,7 +1076,7 @@ export default function AmourEstiloDashboard() {
     return (
       <div className={`theme-${themeMode}`}>
         <style>{THEME_CSS}</style>
-        <LoginScreen onLogin={handleLogin} onSkipLogin={handleSkipLogin} themeMode={themeMode} toggleTheme={toggleTheme} loading={authLoading} error={authError} />
+        <LoginScreen onLogin={handleLogin} themeMode={themeMode} toggleTheme={toggleTheme} loading={authLoading} error={authError} />
       </div>
     );
   }
@@ -1193,3 +1124,6 @@ function StatTile({ icon: Icon, label, value, cv }) {
       <IconAvatar icon={Icon} colorVar={cv} size={32} />
       <p className="text-[10px] text-[var(--label3)] mt-2 uppercase tracking-wider font-medium">{label}</p>
       <p className="text-base font-bold mt-0.5" style={{ color: v(cv) }}>{value}</p>
+    </div>
+  );
+}
