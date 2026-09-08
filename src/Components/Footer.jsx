@@ -40,7 +40,7 @@ export default function Footer() {
               lineHeight: 1.6,
             }}
           >
-<AmourEstiloDasboard/>
+India's premier luxury makeup atelier. High Fashion. Haute Standard. Bengaluru & beyond.
           </Typography>
         </Grid>
 
