@@ -28,7 +28,6 @@ const theme = createTheme({
 const mainMenu = [
   { name: "Home", path: "/" },
   { name: "Reserve Your Experience", path: "/Amourappointmentbooking" },
-      { name: "AmourEstiloDashboard ", path: "/AmourEstiloDashboard" },
   { name: "Maison Amour Estilo", path: "/AmourEstiloAbout" },
   { name: "Bespoke Experiences", path: "/Amourestiloexperience" },
   { name: "Skin Consultation", path: "/HouseOfAmourEstilo" },
