@@ -10,7 +10,7 @@ import HouseOfAmourEstilo from "./Components/HouseOfAmourEstilo.jsx";
 import SkinColorTheory from "./Components/SkinColorTheory.jsx";
 import Amourestiloexperience from "./Components/Amourestiloexperience.jsx";
 import AmourEstiloPrive from "./Components/AmourEstiloPrive.jsx";
-import AmourEstiloDashboard from "./Components/AmourEstiloDashboard.jsx";
+
 
 function App() {
   return (
@@ -55,10 +55,8 @@ function App() {
           element={<Amourestiloexperience />}
         />
 
-        <Route
-          path="/AmourEstiloDashboard"
-          element={<AmourEstiloDashboard />}
-        />
+     
+        
 
         {/* 404 */}
         <Route
