@@ -15,7 +15,7 @@ import AmourEstiloPrive from "./Components/AmourEstiloPrive.jsx";
 function App() {
   return (
     <BrowserRouter>
-      <ResponsiveLayout/>
+      <ResponsiveLayout>
 
       <Routes>
         <Route path="/" element={<Amourestilohomepage />} />
@@ -63,7 +63,7 @@ function App() {
           path="*"
           element={<h1>404 - Page Not Found</h1>}
         />
-      </Routes>
+      </Routes>   </ResponsiveLayout>
 
     </BrowserRouter>
   );
