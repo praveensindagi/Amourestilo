@@ -40,11 +40,7 @@ export default function Footer() {
               color: "#d5d5d5",
               lineHeight: 1.6,
             }}
-          > NavLink to="/AmourEstiloDashboard">
-
-  Dashboard
-
-</NavLink>
+          > hello 
           </Typography>
         </Grid>
 
