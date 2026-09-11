@@ -34,8 +34,6 @@ const mainMenu = [
   { name: "Personal Color Analysis", path: "/SkinColorTheory" },
   { name: "Join The Maison", path: "/Amourestilocareers" },
   { name: "Join Prive", path: "/AmourEstiloPrive" },
-
-  
 ];
 
 const subMenu = ["Customer Care", "Store Locator", "Sustainability"];
@@ -188,7 +186,7 @@ export default function ArmaniSidebarLayout({ children }) {
 
       {/* SPACER — reserves space equal to the fixed AppBar's height so
           page content is pushed below it instead of rendering underneath */}
-      
+      <Toolbar />
 
       {/* PAGE CONTENT */}
       <Box component="main" sx={{ px: { xs: 2, sm: 4 }, py: 2 }}>
