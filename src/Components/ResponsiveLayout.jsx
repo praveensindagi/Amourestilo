@@ -189,7 +189,7 @@ export default function ArmaniSidebarLayout({ children }) {
       <Toolbar />
 
       {/* PAGE CONTENT */}
-      <Box component="main" sx={{ px: { xs: 2, sm: 4 }, py: 2 }}>
+      <Box component="main">
         {children}
       </Box>
     </ThemeProvider>
